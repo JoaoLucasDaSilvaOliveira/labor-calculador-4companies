@@ -8,7 +8,6 @@ import (
 type SupabaseConfig struct {
 	URL string
 }
-
 func LoadSupabaseConfig() (*SupabaseConfig, error) {
 	dsn := os.Getenv("SUPABASE_URL")
 
@@ -17,4 +16,18 @@ func LoadSupabaseConfig() (*SupabaseConfig, error) {
 	}
 
 	return &SupabaseConfig{URL: dsn}, nil
+}
+
+//-----------------------------------------------------
+
+type SQLiteConfig struct {
+	DatabaseDriver, DataSourceName, MigrationsDir string
+}
+
+func LoadSQLiteConfig() *SQLiteConfig {
+	return &SQLiteConfig{
+		DatabaseDriver: os.Getenv("DB_DRIVER"),
+		DataSourceName: os.Getenv("DB_DSN"),
+		MigrationsDir: os.Getenv("MIGRATIONS_DIR"),
+	}
 }

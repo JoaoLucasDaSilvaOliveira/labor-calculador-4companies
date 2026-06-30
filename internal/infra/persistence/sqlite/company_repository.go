@@ -1,4 +1,4 @@
-package supabase
+package sqlite
 
 import (
 	query "labor-calculador-4companies/internal/application/query/company"
@@ -61,7 +61,7 @@ func (r *CompanyRepository) Get(filter query.GetCompanyWithFilter) ([]*entity.Co
 	}
 
 	if filter.Name != "" {
-		dbQuery = dbQuery.Where("name ILIKE ?", "%"+filter.Name+"%")
+		dbQuery = dbQuery.Where("name LIKE ? COLLATE NOCASE", "%"+filter.Name+"%")
 	}
 
 	if filter.CNPJ != "" {
