@@ -14,6 +14,7 @@ require (
 )
 
 require (
+	cloud.google.com/go v0.123.0 // indirect
 	fyne.io/systray v1.12.1 // indirect
 	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

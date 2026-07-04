@@ -3,7 +3,9 @@ package entity
 import (
 	"fmt"
 	error_factory "labor-calculador-4companies/internal/domain/error"
+	"labor-calculador-4companies/internal/domain/valueobject"
 
+	"cloud.google.com/go/civil"
 	"github.com/shopspring/decimal"
 )
 
@@ -33,6 +35,10 @@ var (
 	// CalculateTransportationVoucher errors.
 	ErrInvalidTransportationContribution = error_factory.NewError("fator de contribuição do vale-transporte deve estar entre 0% e 6%")
 	ErrInvalidTransportationVoucherBase  = error_factory.NewError("salário base do vale-transporte não pode ser menor ou igual a zero")
+
+	// CalculateVacation errors.
+	ErrInvalidVacationAcquisitionPeriod      = error_factory.NewError("início do período aquisitivo deve ser anterior ao fim do período aquisitivo")
+	ErrInvalidVacationAcquisitionPeriodRange = error_factory.NewError("período aquisitivo não pode ser maior do que 1 ano completo")
 )
 
 func CalculateHoursBalanceUsingDays(baseSalary decimal.Decimal, qttWorkedDays int64) (decimal.Decimal, error) {
@@ -108,7 +114,9 @@ func CalculateNightAdditional(qttHours float32, incomePerHour decimal.Decimal) (
 		return decimal.Zero, fmt.Errorf("%w: %s", ErrInvalidExtraHoursIncome, incomePerHour.String())
 	}
 
+
 	decimalQttHours := decimal.NewFromFloat32(qttHours)
+
 	factor := decimal.NewFromFloat(0.2)
 	return decimalQttHours.Mul(incomePerHour).Mul(factor), nil
 }
@@ -146,4 +154,54 @@ func CalculateTransportationVoucher(baseSalary decimal.Decimal, contributionFact
 	decimalContributionFator := decimal.NewFromFloat32(contributionFactor)
 
 	return baseSalary.Mul(decimalContributionFator), nil
+}
+
+func CalculateVacation(averageIncomePerMonth decimal.Decimal, startOfAcquisitionPeriod civil.Date, endOfAcquisitionPeriod civil.Date) (*valueobject.VacationAmount, error) {
+	if startOfAcquisitionPeriod == endOfAcquisitionPeriod {
+		zeroAmount, _ := valueobject.NewVacationAmount(decimal.Zero) 
+		return zeroAmount, nil
+	}
+	
+	if !startOfAcquisitionPeriod.Before(endOfAcquisitionPeriod) {
+		return nil, fmt.Errorf("%w: %s - %s", ErrInvalidVacationAcquisitionPeriod, startOfAcquisitionPeriod.String(), endOfAcquisitionPeriod.String())
+	}
+
+	lastValidEndDate := startOfAcquisitionPeriod.AddYears(1).AddDays(-1)
+	if endOfAcquisitionPeriod.After(lastValidEndDate) {
+		return nil, fmt.Errorf("%w: %s - %s", ErrInvalidVacationAcquisitionPeriodRange, startOfAcquisitionPeriod.String(), endOfAcquisitionPeriod.String())
+	}
+
+	qttMonthsWorked, qttDaysWorked := calculateMonthDayDifference(startOfAcquisitionPeriod, endOfAcquisitionPeriod)
+
+	if qttDaysWorked >= 15 {
+		qttMonthsWorked++
+	}
+
+	
+	decimalQttMonthsWorked := decimal.NewFromInt(int64(qttMonthsWorked))
+	decimalQttMonthsInAYear := decimal.NewFromInt(12)
+	
+	vacationAmount, err := valueobject.NewVacationAmount(averageIncomePerMonth.Div(decimalQttMonthsInAYear).Mul(decimalQttMonthsWorked))
+
+	if err != nil {
+		return nil, err
+	}
+	
+	return vacationAmount, nil
+}
+
+func calculateMonthDayDifference(startDate civil.Date, endDate civil.Date) (int, int) {
+	qttMonths := 0
+	for {
+		nextMonthDate := startDate.AddMonths(qttMonths + 1)
+		if nextMonthDate.After(endDate) {
+			break
+		}
+		qttMonths++
+	}
+
+	lastMonthDate := startDate.AddMonths(qttMonths)
+	qttDays := endDate.DaysSince(lastMonthDate)
+
+	return qttMonths, qttDays
 }

@@ -2,10 +2,12 @@ package entity_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"labor-calculador-4companies/internal/domain/entity"
 
+	"cloud.google.com/go/civil"
 	"github.com/shopspring/decimal"
 )
 
@@ -55,6 +57,11 @@ func TestCalculateOvertime(t *testing.T) {
 		_, err := entity.CalculateOvertime(0.5, 2, decimal.NewFromInt(10))
 		assertErrorIs(t, err, entity.ErrInvalidExtraHoursFactor)
 	})
+
+	t.Run("here", func(t *testing.T) {
+		value, _ := entity.CalculateOvertime(2, 2, decimal.NewFromInt(10))
+		fmt.Println(value)
+	})
 }
 
 func TestCalculateInsalubrity(t *testing.T) {
@@ -87,6 +94,11 @@ func TestCalculateNightAdditional(t *testing.T) {
 		_, err := entity.CalculateNightAdditional(-1, decimal.NewFromInt(10))
 		assertErrorIs(t, err, entity.ErrInvalidNightAdditionalHours)
 	})
+
+	t.Run("here", func(t *testing.T) {
+		value, _ := entity.CalculateNightAdditional(73.68, decimal.NewFromFloat(10.11))
+		fmt.Println(value)
+	})
 }
 
 func TestCalculateEffects(t *testing.T) {
@@ -118,6 +130,60 @@ func TestCalculateTransportationVoucher(t *testing.T) {
 	t.Run("returns error when contribution factor is invalid", func(t *testing.T) {
 		_, err := entity.CalculateTransportationVoucher(decimal.NewFromInt(1000), 0.07)
 		assertErrorIs(t, err, entity.ErrInvalidTransportationContribution)
+	})
+}
+
+func TestCalculateVacation(t *testing.T) {
+	t.Run("accepts acquisition period with one complete year", func(t *testing.T) {
+		_, err := entity.CalculateVacation(
+			decimal.NewFromInt(3000),
+			civil.Date{Year: 2025, Month: 2, Day: 23},
+			civil.Date{Year: 2026, Month: 2, Day: 22},
+		)
+		if err != nil {
+			t.Fatalf("expected nil error, got %v", err)
+		}
+	})
+
+	t.Run("returns error when start is not before end", func(t *testing.T) {
+		_, err := entity.CalculateVacation(
+			decimal.NewFromInt(3000),
+			civil.Date{Year: 2025, Month: 2, Day: 23},
+			civil.Date{Year: 2025, Month: 2, Day: 23},
+		)
+		assertErrorIs(t, err, entity.ErrInvalidVacationAcquisitionPeriod)
+	})
+
+	t.Run("returns error when acquisition period is greater than one complete year", func(t *testing.T) {
+		_, err := entity.CalculateVacation(
+			decimal.NewFromInt(3000),
+			civil.Date{Year: 2025, Month: 2, Day: 23},
+			civil.Date{Year: 2026, Month: 2, Day: 23},
+		)
+		assertErrorIs(t, err, entity.ErrInvalidVacationAcquisitionPeriodRange)
+	})
+
+	t.Run("shows on log the diference of months and days between two acquisitive period dates", func(t *testing.T) {
+		_, _ = entity.CalculateVacation(
+			decimal.NewFromInt(3000),
+			civil.Date{Year: 2025, Month: 2, Day: 23},
+			civil.Date{Year: 2026, Month: 2, Day: 22},
+		)
+	})
+
+	t.Run("returns the amount of vacation", func(t *testing.T) {
+		amount, err := entity.CalculateVacation(
+			decimal.NewFromInt(2000),
+			civil.Date{Year: 2025, Month: 2, Day: 23},
+			civil.Date{Year: 2025, Month: 3, Day: 10},
+		)
+
+		if err != nil {
+			fmt.Println(err) 
+			return
+		}
+		
+		fmt.Println(amount.VacationValue.Round(2))
 	})
 }
 
