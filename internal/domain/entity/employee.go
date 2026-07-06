@@ -8,12 +8,13 @@ import (
 )
 
 var (
-	ErrInvalidEmployeeFirstName = error_factory.NewError("primeiro nome do funcionário inválido")
-	ErrInvalidEmployeeLastName  = error_factory.NewError("sobrenome do funcionário inválido")
+	ErrInvalidEmployeeSequencialID = error_factory.NewError("id sequencial do funcionário inválido")
+	ErrInvalidEmployeeFirstName    = error_factory.NewError("primeiro nome do funcionário inválido")
+	ErrInvalidEmployeeLastName     = error_factory.NewError("sobrenome do funcionário inválido")
 )
 
-// This entity wont be saved on bd, it's gonna be used on making receipt process
 type Employee struct {
+	id        int
 	firstName string
 	lastName  string
 	cpf       valueobject.CPF
@@ -35,6 +36,36 @@ func NewEmployee(firstName string, lastName string, cpf string) (*Employee, erro
 	}
 
 	return employee, nil
+}
+
+func LoadEmployee(sequencialID int, firstName string, lastName string, cpf string) (*Employee, error) {
+	employee, err := NewEmployee(firstName, lastName, cpf)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := employee.SetId(sequencialID); err != nil {
+		return nil, err
+	}
+
+	return employee, nil
+}
+
+func (e *Employee) GetId() int {
+	return e.id
+}
+
+func (e *Employee) SequencialID() int {
+	return e.id
+}
+
+func (e *Employee) SetId(sequencialID int) error {
+	if sequencialID <= 0 {
+		return fmt.Errorf("%w: %d", ErrInvalidEmployeeSequencialID, sequencialID)
+	}
+
+	e.id = sequencialID
+	return nil
 }
 
 func (e *Employee) FirstName() string {

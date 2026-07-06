@@ -10,11 +10,17 @@ import (
 type CreateCompanyUsecase struct {
 	repository repository.CompanyRepository
 }
+
 func NewCreateCompanyUsecase(repository repository.CompanyRepository) *CreateCompanyUsecase {
 	return &CreateCompanyUsecase{repository: repository}
 }
 func (uc *CreateCompanyUsecase) Execute(cmd command.CreateCompanyCommand) error {
-	return uc.repository.Create(cmd.Name, cmd.CNPJ)
+	company, err := entity.NewCompany(cmd.Name, cmd.CNPJ.String())
+	if err != nil {
+		return err
+	}
+
+	return uc.repository.Create(company)
 }
 
 //---------------------------------------------------------------------------------
@@ -22,6 +28,7 @@ func (uc *CreateCompanyUsecase) Execute(cmd command.CreateCompanyCommand) error 
 type DeleteCompanyUsecase struct {
 	repository repository.CompanyRepository
 }
+
 func NewDeleteCompanyUsecase(repository repository.CompanyRepository) *DeleteCompanyUsecase {
 	return &DeleteCompanyUsecase{repository: repository}
 }
@@ -34,11 +41,12 @@ func (uc *DeleteCompanyUsecase) Execute(cmd command.DeleteCompanyCommand) error 
 type UpdateCompanyUsecase struct {
 	repository repository.CompanyRepository
 }
+
 func NewUpdateCompanyUsecase(repository repository.CompanyRepository) *UpdateCompanyUsecase {
 	return &UpdateCompanyUsecase{repository: repository}
 }
 func (uc *UpdateCompanyUsecase) Execute(cmd command.UpdateCompanyCommand) error {
-	company, err := entity.NewCompany(cmd.IDCompany, cmd.Name, cmd.CNPJ.String())
+	company, err := entity.LoadCompany(cmd.IDCompany, cmd.Name, cmd.CNPJ.String())
 	if err != nil {
 		return err
 	}
@@ -51,6 +59,7 @@ func (uc *UpdateCompanyUsecase) Execute(cmd command.UpdateCompanyCommand) error 
 type GetCompanyUsecase struct {
 	repository repository.CompanyRepository
 }
+
 func NewGetCompanyUsecase(repository repository.CompanyRepository) *GetCompanyUsecase {
 	return &GetCompanyUsecase{repository: repository}
 }
@@ -63,6 +72,7 @@ func (uc *GetCompanyUsecase) Execute(qry query.GetCompanyWithFilter) ([]*entity.
 type GetCompanyByIdUsecase struct {
 	repository repository.CompanyRepository
 }
+
 func NewGetCompanyByIdUsecase(repository repository.CompanyRepository) *GetCompanyByIdUsecase {
 	return &GetCompanyByIdUsecase{repository: repository}
 }

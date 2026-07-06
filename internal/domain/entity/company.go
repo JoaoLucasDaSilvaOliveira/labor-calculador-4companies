@@ -13,17 +13,13 @@ var (
 )
 
 type Company struct {
-	sequencialID int
-	name         string
-	cnpj         string
+	id   int
+	name string
+	cnpj string
 }
 
-func NewCompany(sequencialID int, name string, cnpj string) (*Company, error) {
+func NewCompany(name string, cnpj string) (*Company, error) {
 	company := &Company{}
-
-	if err := company.SetSequencialID(sequencialID); err != nil {
-		return nil, err
-	}
 
 	if err := company.SetName(name); err != nil {
 		return nil, err
@@ -36,16 +32,33 @@ func NewCompany(sequencialID int, name string, cnpj string) (*Company, error) {
 	return company, nil
 }
 
-func (c *Company) SequencialID() int {
-	return c.sequencialID
+func LoadCompany(sequencialID int, name string, cnpj string) (*Company, error) {
+	company, err := NewCompany(name, cnpj)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := company.SetId(sequencialID); err != nil {
+		return nil, err
+	}
+
+	return company, nil
 }
 
-func (c *Company) SetSequencialID(sequencialID int) error {
+func (c *Company) GetId() int {
+	return c.id
+}
+
+func (c *Company) SequencialID() int {
+	return c.id
+}
+
+func (c *Company) SetId(sequencialID int) error {
 	if sequencialID <= 0 {
 		return fmt.Errorf("%w: %d", ErrInvalidCompanySequencialID, sequencialID)
 	}
 
-	c.sequencialID = sequencialID
+	c.id = sequencialID
 	return nil
 }
 

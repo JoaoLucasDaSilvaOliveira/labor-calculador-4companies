@@ -14,3 +14,21 @@ BEGIN
     SET updated_at = CURRENT_TIMESTAMP
     WHERE id = OLD.id;
 END;
+
+CREATE TABLE IF NOT EXISTS employee (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    cpf TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER IF NOT EXISTS update_employee_updated_at
+AFTER UPDATE ON employee
+FOR EACH ROW
+BEGIN
+    UPDATE employee
+    SET updated_at = CURRENT_TIMESTAMP
+    WHERE id = OLD.id;
+END;

@@ -4,7 +4,6 @@ import (
 	query "labor-calculador-4companies/internal/application/query/company"
 	"labor-calculador-4companies/internal/domain/entity"
 	"labor-calculador-4companies/internal/domain/repository"
-	"labor-calculador-4companies/internal/domain/valueobject"
 	"time"
 
 	"gorm.io/gorm"
@@ -30,10 +29,10 @@ func NewCompanyRepository(db *gorm.DB) repository.CompanyRepository {
 	return &CompanyRepository{db: db}
 }
 
-func (r *CompanyRepository) Create(name string, cnpj valueobject.CNPJ) error {
+func (r *CompanyRepository) Create(company *entity.Company) error {
 	model := companyModel{
-		Name: name,
-		CNPJ: cnpj.String(),
+		Name: company.Name(),
+		CNPJ: company.CNPJ(),
 	}
 
 	return r.db.Create(&model).Error
@@ -41,7 +40,7 @@ func (r *CompanyRepository) Create(name string, cnpj valueobject.CNPJ) error {
 
 func (r *CompanyRepository) Update(company *entity.Company) error {
 	model := companyModel{
-		ID:   company.SequencialID(),
+		ID:   company.GetId(),
 		Name: company.Name(),
 		CNPJ: company.CNPJ(),
 	}
@@ -101,5 +100,5 @@ func toCompanyEntities(models []companyModel) ([]*entity.Company, error) {
 }
 
 func toCompanyEntity(model companyModel) (*entity.Company, error) {
-	return entity.NewCompany(model.ID, model.Name, model.CNPJ)
+	return entity.LoadCompany(model.ID, model.Name, model.CNPJ)
 }
