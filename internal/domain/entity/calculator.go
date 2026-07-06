@@ -16,7 +16,7 @@ var (
 	ErrInvalidExtraHoursIncome = error_factory.NewError("valor da hora não pode ser menor ou igual a zero")
 
 	// CalculateHoursBalanceUsingDays and CalculateHoursBalanceUsingHours errors.
-	ErrInvalidBaseSalary  = error_factory.NewError("salário base não pode ser menor ou igual a zero")
+	ErrInvalidBaseSalary  = error_factory.NewError("valor base não pode ser menor ou igual a zero")
 	ErrInvalidWorkedDays  = error_factory.NewError("quantidade de dias trabalhados deve estar entre 0 e 30")
 	ErrInvalidWorkedHours = error_factory.NewError("quantidade de horas trabalhadas deve estar entre 0 e 220")
 
@@ -114,7 +114,6 @@ func CalculateNightAdditional(qttHours float32, incomePerHour decimal.Decimal) (
 		return decimal.Zero, fmt.Errorf("%w: %s", ErrInvalidExtraHoursIncome, incomePerHour.String())
 	}
 
-
 	decimalQttHours := decimal.NewFromFloat32(qttHours)
 
 	factor := decimal.NewFromFloat(0.2)
@@ -158,10 +157,10 @@ func CalculateTransportationVoucher(baseSalary decimal.Decimal, contributionFact
 
 func CalculateVacation(averageIncomePerMonth decimal.Decimal, startOfAcquisitionPeriod civil.Date, endOfAcquisitionPeriod civil.Date) (*valueobject.VacationAmount, error) {
 	if startOfAcquisitionPeriod == endOfAcquisitionPeriod {
-		zeroAmount, _ := valueobject.NewVacationAmount(decimal.Zero) 
+		zeroAmount, _ := valueobject.NewVacationAmount(decimal.Zero)
 		return zeroAmount, nil
 	}
-	
+
 	if !startOfAcquisitionPeriod.Before(endOfAcquisitionPeriod) {
 		return nil, fmt.Errorf("%w: %s - %s", ErrInvalidVacationAcquisitionPeriod, startOfAcquisitionPeriod.String(), endOfAcquisitionPeriod.String())
 	}
@@ -177,17 +176,47 @@ func CalculateVacation(averageIncomePerMonth decimal.Decimal, startOfAcquisition
 		qttMonthsWorked++
 	}
 
-	
 	decimalQttMonthsWorked := decimal.NewFromInt(int64(qttMonthsWorked))
 	decimalQttMonthsInAYear := decimal.NewFromInt(12)
-	
+
 	vacationAmount, err := valueobject.NewVacationAmount(averageIncomePerMonth.Div(decimalQttMonthsInAYear).Mul(decimalQttMonthsWorked))
 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return vacationAmount, nil
+}
+
+func CalculateThirteenthSalary(incomePerMonth decimal.Decimal, averages decimal.Decimal, ts *valueobject.ThirteenthSalary) decimal.Decimal {
+	civilStartActivities := civil.Date{
+		Year:  ts.TargetYear,
+		Month: ts.StartOfActivities.Month,
+		Day:   ts.StartOfActivities.Day,
+	}
+	civilEndActivities := civil.Date{
+		Year:  ts.TargetYear,
+		Month: ts.EndOfActivities.Month,
+		Day:   ts.EndOfActivities.Day,
+	}
+
+	qttMonthsInAYear := decimal.NewFromInt(12)
+
+	qttMonths := calculateMonthDifferenceInsideTheSameMonth(civilStartActivities, civilEndActivities)
+
+	qttMonthsDecimal := decimal.NewFromInt(int64(qttMonths))
+
+	averageIncome := incomePerMonth.Add(averages)
+
+	return averageIncome.Div(qttMonthsInAYear).Mul(qttMonthsDecimal)
+}
+
+func CalculateFGTS(baseValue decimal.Decimal) (decimal.Decimal, error) {
+	if baseValue.LessThan(decimal.Zero) {
+		return decimal.Zero, ErrInvalidBaseSalary
+	}
+
+	return baseValue.Mul(decimal.NewFromFloat(0.08)), nil
 }
 
 func calculateMonthDayDifference(startDate civil.Date, endDate civil.Date) (int, int) {
@@ -204,4 +233,38 @@ func calculateMonthDayDifference(startDate civil.Date, endDate civil.Date) (int,
 	qttDays := endDate.DaysSince(lastMonthDate)
 
 	return qttMonths, qttDays
+}
+
+func calculateMonthDifferenceInsideTheSameMonth(startDate civil.Date, endDate civil.Date) int {
+	qttMonths := 0
+	i := -1
+	for {
+		//discover the last day of both months
+		lastDayStartDate := discoverLastDayInAMonth(startDate.AddMonths(i+1))
+		lastDayEndDate := discoverLastDayInAMonth(endDate)
+		
+		if lastDayStartDate == lastDayEndDate {
+			//in this case the dates are in the same month
+			if endDate.Day > 14 {
+				qttMonths++
+			}
+			break
+		}
+
+		//in the first iteraction, the startDate can be broken, ex: 23/04/yyyy, so we can't assume it is day 1 at first iter
+		if i == -1 {
+			if (lastDayStartDate.Day - startDate.Day + 1) < 15 {
+				i++
+				continue
+			}
+		}
+
+		qttMonths++
+		i++
+	}	
+	return qttMonths
+}
+
+func discoverLastDayInAMonth(d civil.Date) civil.Date {
+	return civil.Date{Year: d.Year, Month: d.Month, Day: 1}.AddMonths(1).AddDays(-1)
 }

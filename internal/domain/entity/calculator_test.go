@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"labor-calculador-4companies/internal/domain/entity"
+	"labor-calculador-4companies/internal/domain/valueobject"
 
 	"cloud.google.com/go/civil"
 	"github.com/shopspring/decimal"
@@ -184,6 +185,26 @@ func TestCalculateVacation(t *testing.T) {
 		}
 		
 		fmt.Println(amount.VacationValue.Round(2))
+	})
+}
+
+func TestCalculateThirteenthSalary(t *testing.T) {
+	t.Run("here", func(t *testing.T) {
+		ts, _ := valueobject.NewThirteenthSalary(2026, 1, 18, 12, 31)
+		fmt.Println(entity.CalculateThirteenthSalary(decimal.NewFromFloat32(1500.00), decimal.Zero, ts))
+	})
+}
+
+func TestCalculateFGTS(t *testing.T) {
+	t.Run("here", func(t *testing.T) {
+		value, err := entity.CalculateFGTS(decimal.NewFromFloat32(-1))
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Println(value)
 	})
 }
 
