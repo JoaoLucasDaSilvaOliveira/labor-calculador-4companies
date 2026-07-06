@@ -4,7 +4,6 @@ import (
 	query "labor-calculador-4companies/internal/application/query/employee"
 	"labor-calculador-4companies/internal/domain/entity"
 	"labor-calculador-4companies/internal/domain/repository"
-	"labor-calculador-4companies/internal/domain/valueobject"
 	"time"
 
 	"gorm.io/gorm"
@@ -31,11 +30,11 @@ func NewEmployeeRepository(db *gorm.DB) repository.EmployeeRepository {
 	return &EmployeeRepository{db: db}
 }
 
-func (r *EmployeeRepository) Create(firstName string, lastName string, cpf valueobject.CPF) error {
+func (r *EmployeeRepository) Create(employee *entity.Employee) error {
 	model := employeeModel{
-		FirstName: firstName,
-		LastName:  lastName,
-		CPF:       cpf.String(),
+		FirstName: employee.FirstName(),
+		LastName:  employee.LastName(),
+		CPF:       employee.CPF(),
 	}
 
 	return r.db.Create(&model).Error
@@ -108,5 +107,9 @@ func toEmployeeEntities(models []employeeModel) ([]*entity.Employee, error) {
 }
 
 func toEmployeeEntity(model employeeModel) (*entity.Employee, error) {
+<<<<<<< HEAD
 	return entity.NewEmployee(model.ID, model.FirstName, model.LastName, model.CPF)
+=======
+	return entity.LoadEmployee(model.ID, model.FirstName, model.LastName, model.CPF)
+>>>>>>> f2deb6c (feat: now employee is saved on database)
 }
