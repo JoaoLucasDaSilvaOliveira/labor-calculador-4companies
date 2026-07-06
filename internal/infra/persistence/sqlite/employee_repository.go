@@ -107,9 +107,5 @@ func toEmployeeEntities(models []employeeModel) ([]*entity.Employee, error) {
 }
 
 func toEmployeeEntity(model employeeModel) (*entity.Employee, error) {
-<<<<<<< HEAD
-	return entity.NewEmployee(model.ID, model.FirstName, model.LastName, model.CPF)
-=======
 	return entity.LoadEmployee(model.ID, model.FirstName, model.LastName, model.CPF)
->>>>>>> f2deb6c (feat: now employee is saved on database)
 }
