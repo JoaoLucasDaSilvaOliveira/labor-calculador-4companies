@@ -3,11 +3,13 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 type SupabaseConfig struct {
 	URL string
 }
+
 func LoadSupabaseConfig() (*SupabaseConfig, error) {
 	dsn := os.Getenv("SUPABASE_URL")
 
@@ -25,9 +27,24 @@ type SQLiteConfig struct {
 }
 
 func LoadSQLiteConfig() *SQLiteConfig {
+	dsn := os.Getenv("DB_DSN")
+	if dsn == "" {
+		dsn = filepath.Join("data", "app.db") + "?_foreign_keys=on"
+	}
+
+	migrationsDir := os.Getenv("MIGRATIONS_DIR")
+	if migrationsDir == "" {
+		migrationsDir = filepath.Join("internal", "infra", "persistence", "sqlite", "migrations")
+	}
+
+	driver := os.Getenv("DB_DRIVER")
+	if driver == "" {
+		driver = "sqlite3"
+	}
+
 	return &SQLiteConfig{
-		DatabaseDriver: os.Getenv("DB_DRIVER"),
-		DataSourceName: os.Getenv("DB_DSN"),
-		MigrationsDir: os.Getenv("MIGRATIONS_DIR"),
+		DatabaseDriver: driver,
+		DataSourceName: dsn,
+		MigrationsDir:  migrationsDir,
 	}
 }

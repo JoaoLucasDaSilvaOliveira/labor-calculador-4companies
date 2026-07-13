@@ -15,13 +15,15 @@ var (
 
 type Employee struct {
 	id        int
+	companyID int
 	firstName string
 	lastName  string
 	cpf       valueobject.CPF
 }
 
-func NewEmployee(firstName string, lastName string, cpf string) (*Employee, error) {
+func NewEmployee(companyID int, firstName string, lastName string, cpf string) (*Employee, error) {
 	employee := &Employee{}
+	employee.companyID = companyID
 
 	if err := employee.SetFirstName(firstName); err != nil {
 		return nil, err
@@ -38,8 +40,8 @@ func NewEmployee(firstName string, lastName string, cpf string) (*Employee, erro
 	return employee, nil
 }
 
-func LoadEmployee(sequencialID int, firstName string, lastName string, cpf string) (*Employee, error) {
-	employee, err := NewEmployee(firstName, lastName, cpf)
+func LoadEmployee(sequencialID int, companyID int, firstName string, lastName string, cpf string) (*Employee, error) {
+	employee, err := NewEmployee(companyID, firstName, lastName, cpf)
 	if err != nil {
 		return nil, err
 	}
@@ -66,6 +68,14 @@ func (e *Employee) SetId(sequencialID int) error {
 
 	e.id = sequencialID
 	return nil
+}
+
+func (e *Employee) CompanyID() int {
+	return e.companyID
+}
+
+func (e *Employee) SetCompanyID(companyID int) {
+	e.companyID = companyID
 }
 
 func (e *Employee) FirstName() string {

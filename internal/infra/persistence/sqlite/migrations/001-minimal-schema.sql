@@ -17,6 +17,7 @@ END;
 
 CREATE TABLE IF NOT EXISTS employee (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL DEFAULT 0,
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
     cpf TEXT NOT NULL,
@@ -32,3 +33,5 @@ BEGIN
     SET updated_at = CURRENT_TIMESTAMP
     WHERE id = OLD.id;
 END;
+
+CREATE INDEX IF NOT EXISTS idx_employee_company_id ON employee(company_id);

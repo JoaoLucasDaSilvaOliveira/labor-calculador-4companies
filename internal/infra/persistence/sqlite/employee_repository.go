@@ -15,6 +15,7 @@ type EmployeeRepository struct {
 
 type employeeModel struct {
 	ID        int       `gorm:"column:id;primaryKey;autoIncrement"`
+	CompanyID int       `gorm:"column:company_id"`
 	FirstName string    `gorm:"column:first_name"`
 	LastName  string    `gorm:"column:last_name"`
 	CPF       string    `gorm:"column:cpf"`
@@ -32,6 +33,7 @@ func NewEmployeeRepository(db *gorm.DB) repository.EmployeeRepository {
 
 func (r *EmployeeRepository) Create(employee *entity.Employee) error {
 	model := employeeModel{
+		CompanyID: employee.CompanyID(),
 		FirstName: employee.FirstName(),
 		LastName:  employee.LastName(),
 		CPF:       employee.CPF(),
@@ -43,6 +45,7 @@ func (r *EmployeeRepository) Create(employee *entity.Employee) error {
 func (r *EmployeeRepository) Update(employee *entity.Employee) error {
 	model := employeeModel{
 		ID:        employee.GetId(),
+		CompanyID: employee.CompanyID(),
 		FirstName: employee.FirstName(),
 		LastName:  employee.LastName(),
 		CPF:       employee.CPF(),
@@ -60,6 +63,10 @@ func (r *EmployeeRepository) Get(filter query.GetEmployeeWithFilter) ([]*entity.
 
 	if filter.IDEmployee > 0 {
 		dbQuery = dbQuery.Where("id = ?", filter.IDEmployee)
+	}
+
+	if filter.CompanyID > 0 {
+		dbQuery = dbQuery.Where("company_id = ?", filter.CompanyID)
 	}
 
 	if filter.FirstName != "" {
@@ -107,5 +114,5 @@ func toEmployeeEntities(models []employeeModel) ([]*entity.Employee, error) {
 }
 
 func toEmployeeEntity(model employeeModel) (*entity.Employee, error) {
-	return entity.LoadEmployee(model.ID, model.FirstName, model.LastName, model.CPF)
+	return entity.LoadEmployee(model.ID, model.CompanyID, model.FirstName, model.LastName, model.CPF)
 }

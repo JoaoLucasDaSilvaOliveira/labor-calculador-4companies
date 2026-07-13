@@ -4,6 +4,7 @@ import "labor-calculador-4companies/internal/domain/valueobject"
 
 type GetEmployeeWithFilter struct {
 	IDEmployee int
+	CompanyID  int
 	FirstName  string
 	LastName   string
 	CPF        valueobject.CPF

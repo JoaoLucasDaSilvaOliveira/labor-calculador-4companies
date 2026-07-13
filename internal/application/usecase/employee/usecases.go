@@ -15,7 +15,7 @@ func NewCreateEmployeeUsecase(repository repository.EmployeeRepository) *CreateE
 	return &CreateEmployeeUsecase{repository: repository}
 }
 func (uc *CreateEmployeeUsecase) Execute(cmd command.CreateEmployeeCommand) error {
-	employee, err := entity.NewEmployee(cmd.FirstName, cmd.LastName, cmd.CPF.String())
+	employee, err := entity.NewEmployee(cmd.CompanyID, cmd.FirstName, cmd.LastName, cmd.CPF.String())
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func NewUpdateEmployeeUsecase(repository repository.EmployeeRepository) *UpdateE
 	return &UpdateEmployeeUsecase{repository: repository}
 }
 func (uc *UpdateEmployeeUsecase) Execute(cmd command.UpdateEmployeeCommand) error {
-	employee, err := entity.LoadEmployee(cmd.IDEmployee, cmd.FirstName, cmd.LastName, cmd.CPF.String())
+	employee, err := entity.LoadEmployee(cmd.IDEmployee, cmd.CompanyID, cmd.FirstName, cmd.LastName, cmd.CPF.String())
 	if err != nil {
 		return err
 	}
