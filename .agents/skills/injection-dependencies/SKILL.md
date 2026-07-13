@@ -1,3 +1,8 @@
+---
+name: dependency-injection-pattern
+description: Use this skill when building, improving, refactoring, or integrating Go bootstrap/initialization files, like `main.go`.
+---
+
 # Skill: Go DDD Dependency Injection via `main.go`
 
 ## Objetivo

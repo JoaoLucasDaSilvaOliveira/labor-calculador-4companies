@@ -4,7 +4,6 @@ import (
 	"fmt"
 	error_factory "labor-calculador-4companies/internal/domain/error"
 	"labor-calculador-4companies/internal/domain/valueobject"
-
 	"cloud.google.com/go/civil"
 	"github.com/shopspring/decimal"
 )
