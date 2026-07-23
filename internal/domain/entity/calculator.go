@@ -4,6 +4,7 @@ import (
 	"fmt"
 	error_factory "labor-calculador-4companies/internal/domain/error"
 	"labor-calculador-4companies/internal/domain/valueobject"
+
 	"cloud.google.com/go/civil"
 	"github.com/shopspring/decimal"
 )
@@ -239,9 +240,9 @@ func calculateMonthDifferenceInsideTheSameMonth(startDate civil.Date, endDate ci
 	i := -1
 	for {
 		//discover the last day of both months
-		lastDayStartDate := discoverLastDayInAMonth(startDate.AddMonths(i+1))
+		lastDayStartDate := discoverLastDayInAMonth(startDate.AddMonths(i + 1))
 		lastDayEndDate := discoverLastDayInAMonth(endDate)
-		
+
 		if lastDayStartDate == lastDayEndDate {
 			//in this case the dates are in the same month
 			if endDate.Day > 14 {
@@ -260,7 +261,7 @@ func calculateMonthDifferenceInsideTheSameMonth(startDate civil.Date, endDate ci
 
 		qttMonths++
 		i++
-	}	
+	}
 	return qttMonths
 }
 

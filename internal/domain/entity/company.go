@@ -49,10 +49,6 @@ func (c *Company) GetId() int {
 	return c.id
 }
 
-func (c *Company) SequencialID() int {
-	return c.id
-}
-
 func (c *Company) SetId(sequencialID int) error {
 	if sequencialID <= 0 {
 		return fmt.Errorf("%w: %d", ErrInvalidCompanySequencialID, sequencialID)
