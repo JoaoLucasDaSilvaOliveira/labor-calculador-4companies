@@ -16,7 +16,11 @@ var (
 	//go:embed "icons/m-glass.png"
 	mGlassIconpng []byte
 
-	OpenTabIcon  = fyne.NewStaticResource("open-tab-icon.png", openTabIconpng)
-	CloseTabIcon = fyne.NewStaticResource("close-tab-icon.png", closeTabIconpng)
-	MagnifingGlass = fyne.NewStaticResource("m-glass.png", mGlassIconpng)
+	//go:embed "icons/close-m-glass.png"
+	CloseMGlassIconpng []byte
+
+	OpenTabIcon         = fyne.NewStaticResource("open-tab-icon.png", openTabIconpng)
+	CloseTabIcon        = fyne.NewStaticResource("close-tab-icon.png", closeTabIconpng)
+	MagnifingGlass      = fyne.NewStaticResource("m-glass.png", mGlassIconpng)
+	CloseMagnifingGlass = fyne.NewStaticResource("close-m-glass.png", CloseMGlassIconpng)
 )

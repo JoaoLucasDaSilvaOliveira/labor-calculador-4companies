@@ -18,11 +18,20 @@ const (
 	homePageOpenedSplitOffset = 0.3
 )
 
+type homePageSidebarState uint8
+
+const (
+	homePageSidebarCompanies homePageSidebarState = iota
+	homePageSidebarSearch
+	homePageSidebarClosed
+)
+
 func NewHomePage(app *application.MainApplication) {
 	// sidebarHost remains mounted in the split while its single child changes between sidebar states.
 	sidebarHost := container.NewStack()
-	// showSidebar is the source of truth for the sidebar mode.
-	showSidebar := true
+	// sidebarState is the requested view, while lastOpenedSidebarState is restored after reopening.
+	sidebarState := homePageSidebarCompanies
+	lastOpenedSidebarState := homePageSidebarCompanies
 
 	// Quick access component - center component.
 	fastAccLabel := widget.NewLabel("ACESSO RÁPIDO")
@@ -84,55 +93,88 @@ func NewHomePage(app *application.MainApplication) {
 	}
 
 	var renderSidebar func()
+	var renderedSidebarState homePageSidebarState
 	renderSidebar = func() {
-		if showSidebar {
-			openedSidebar := components.NewOpenedHomePageSideBar(app, func() {
-				showSidebar = false
-				renderSidebar()
-			})
-
-			if len(sidebarHost.Objects) == 0 {
-				// Initial render does not need an animation.
-				setSidebar(openedSidebar)
-				homepageBox.SetOffset(homePageOpenedSplitOffset)
+		closeSidebar := func() {
+			if sidebarState == homePageSidebarClosed {
 				return
 			}
 
-			// Expand to the opened view minimum width before mounting it to avoid a layout jump.
-			animateSplitOffset(minimumOffset(openedSidebar), func() {
-				setSidebar(openedSidebar)
-				// Continue from the minimum width to the normal opened sidebar width.
+			lastOpenedSidebarState = sidebarState
+			sidebarState = homePageSidebarClosed
+			renderSidebar()
+		}
+		openSidebar := func() {
+			if sidebarState != homePageSidebarClosed {
+				return
+			}
+
+			sidebarState = lastOpenedSidebarState
+			renderSidebar()
+		}
+		showSearch := func() {
+			if sidebarState == homePageSidebarClosed || sidebarState == homePageSidebarSearch {
+				return
+			}
+
+			sidebarState = homePageSidebarSearch
+			lastOpenedSidebarState = homePageSidebarSearch
+			renderSidebar()
+		}
+		showCompanies := func() {
+			if sidebarState != homePageSidebarSearch {
+				return
+			}
+
+			sidebarState = homePageSidebarCompanies
+			lastOpenedSidebarState = homePageSidebarCompanies
+			renderSidebar()
+		}
+
+		var nextSidebar fyne.CanvasObject
+		switch sidebarState {
+		case homePageSidebarCompanies:
+			nextSidebar = components.NewOpenedHomePageSideBar(app, closeSidebar, showSearch)
+		case homePageSidebarSearch:
+			nextSidebar = components.NewSearchHomePage(app, closeSidebar, showCompanies)
+		case homePageSidebarClosed:
+			nextSidebar = components.NewClosedHomePageSideBar(app, openSidebar)
+		}
+
+		if len(sidebarHost.Objects) == 0 {
+			// Initial render does not need an animation.
+			setSidebar(nextSidebar)
+			renderedSidebarState = sidebarState
+			homepageBox.SetOffset(homePageOpenedSplitOffset)
+			return
+		}
+
+		if renderedSidebarState == homePageSidebarClosed && sidebarState != homePageSidebarClosed {
+			// Expand to the incoming view minimum width before mounting it to avoid a layout jump.
+			animateSplitOffset(minimumOffset(nextSidebar), func() {
+				setSidebar(nextSidebar)
+				renderedSidebarState = sidebarState
 				animateSplitOffset(homePageOpenedSplitOffset, nil)
 			})
 			return
 		}
 
-		closedSidebar := components.NewClosedHomePageSideBar(app, func() {
-			showSidebar = true
-			renderSidebar()
-		})
-		// Shrink the current view to its minimum before replacing it with the closed sidebar.
-		animateSplitOffset(minimumOffset(sidebarHost), func() {
-			setSidebar(closedSidebar)
-			// Finish the transition using the minimum width required by the closed view.
-			animateSplitOffset(minimumOffset(closedSidebar), nil)
-		})
+		if renderedSidebarState != homePageSidebarClosed && sidebarState == homePageSidebarClosed {
+			// Shrink the current view before replacing it with the closed sidebar.
+			animateSplitOffset(minimumOffset(sidebarHost), func() {
+				setSidebar(nextSidebar)
+				renderedSidebarState = sidebarState
+				animateSplitOffset(minimumOffset(nextSidebar), nil)
+			})
+			return
+		}
+
+		setSidebar(nextSidebar)
+		renderedSidebarState = sidebarState
 	}
 
 	renderSidebar()
 
 	// Set the homepage content.
 	app.MasterWindow.SetContent(homepageBox)
-}
-
-func openTabIconFunction() {
-
-}
-
-func closeTabIconFunction() {
-
-}
-
-func mGlassIconFunction() {
-
 }
