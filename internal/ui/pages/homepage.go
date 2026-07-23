@@ -28,7 +28,8 @@ const (
 
 func NewHomePage(app *application.MainApplication) {
 	// sidebarHost remains mounted in the split while its single child changes between sidebar states.
-	sidebarHost := container.NewStack()
+	sidebarContent := components.NewAnimatedContent()
+	sidebarHost := sidebarContent.View()
 	// sidebarState is the requested view, while lastOpenedSidebarState is restored after reopening.
 	sidebarState := homePageSidebarCompanies
 	lastOpenedSidebarState := homePageSidebarCompanies
@@ -87,9 +88,8 @@ func NewHomePage(app *application.MainApplication) {
 		return float64(view.MinSize().Width / availableWidth)
 	}
 	// Replaces the variable sidebar content without recreating the HSplit.
-	setSidebar := func(view fyne.CanvasObject) {
-		sidebarHost.Objects = []fyne.CanvasObject{view}
-		sidebarHost.Refresh()
+	setSidebar := func(view fyne.CanvasObject, onSwapped func()) {
+		sidebarContent.SetContent(view, onSwapped)
 	}
 
 	var renderSidebar func()
@@ -141,9 +141,9 @@ func NewHomePage(app *application.MainApplication) {
 			nextSidebar = components.NewClosedHomePageSideBar(app, openSidebar)
 		}
 
-		if len(sidebarHost.Objects) == 0 {
+		if renderedSidebarState == homePageSidebarCompanies && sidebarState == homePageSidebarCompanies {
 			// Initial render does not need an animation.
-			setSidebar(nextSidebar)
+			setSidebar(nextSidebar, nil)
 			renderedSidebarState = sidebarState
 			homepageBox.SetOffset(homePageOpenedSplitOffset)
 			return
@@ -152,9 +152,10 @@ func NewHomePage(app *application.MainApplication) {
 		if renderedSidebarState == homePageSidebarClosed && sidebarState != homePageSidebarClosed {
 			// Expand to the incoming view minimum width before mounting it to avoid a layout jump.
 			animateSplitOffset(minimumOffset(nextSidebar), func() {
-				setSidebar(nextSidebar)
-				renderedSidebarState = sidebarState
-				animateSplitOffset(homePageOpenedSplitOffset, nil)
+				setSidebar(nextSidebar, func() {
+					renderedSidebarState = sidebarState
+					animateSplitOffset(homePageOpenedSplitOffset, nil)
+				})
 			})
 			return
 		}
@@ -162,15 +163,17 @@ func NewHomePage(app *application.MainApplication) {
 		if renderedSidebarState != homePageSidebarClosed && sidebarState == homePageSidebarClosed {
 			// Shrink the current view before replacing it with the closed sidebar.
 			animateSplitOffset(minimumOffset(sidebarHost), func() {
-				setSidebar(nextSidebar)
-				renderedSidebarState = sidebarState
-				animateSplitOffset(minimumOffset(nextSidebar), nil)
+				setSidebar(nextSidebar, func() {
+					renderedSidebarState = sidebarState
+					animateSplitOffset(minimumOffset(nextSidebar), nil)
+				})
 			})
 			return
 		}
 
-		setSidebar(nextSidebar)
-		renderedSidebarState = sidebarState
+		setSidebar(nextSidebar, func() {
+			renderedSidebarState = sidebarState
+		})
 	}
 
 	renderSidebar()

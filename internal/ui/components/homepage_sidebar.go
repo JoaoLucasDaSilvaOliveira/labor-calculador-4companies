@@ -22,7 +22,7 @@ func NewOpenedHomePageSideBar(app *application.MainApplication, onCloseSideBarCa
 	sideBarBox = container.NewBorder(
 		topSection,
 		nil, nil, nil,
-		companiesList,
+		container.NewBorder(nil, nil, uiUtils.HPadding(8), uiUtils.HPadding(8), companiesList),
 	)
 
 	return sideBarBox
@@ -56,21 +56,20 @@ func NewSearchHomePage(app *application.MainApplication, onCloseSideBarCallback,
 	// Entry for searching companies by name.
 	searchInput := widget.NewEntry()
 	searchInput.SetPlaceHolder("Buscar empresa...")
-	searchResults := container.NewStack(widget.NewLabel("Digite um nome para buscar."))
+	searchResults := NewAnimatedContent()
+	searchResults.SetContent(widget.NewLabel("Digite um nome para buscar."), nil)
 
 	searchInput.OnChanged = func(companyName string) {
 		companiesList := NewCompaniesSearchByNameListComponent(app.GetCompaniesUC, companyName)
 		if companiesList == nil {
-			searchResults.Objects = []fyne.CanvasObject{widget.NewLabel("Digite um nome para buscar.")}
-			searchResults.Refresh()
+			searchResults.SetContent(widget.NewLabel("Digite um nome para buscar."), nil)
 			return
 		}
 
-		searchResults.Objects = []fyne.CanvasObject{companiesList}
-		searchResults.Refresh()
+		searchResults.SetContent(companiesList, nil)
 	}
 
-	searchContent := container.NewBorder(searchInput, nil, nil, nil, searchResults)
+	searchContent := container.NewBorder(searchInput, nil, nil, nil, searchResults.View())
 	return container.NewBorder(
 		topSection,
 		nil, nil, nil,
@@ -106,10 +105,11 @@ func topSection(onCloseSideBarCallback func(), actionIcon fyne.Resource, onActio
 	)
 	// label
 	companiesLabel := widget.NewLabel("Empresas")
+	addCompanyIcon := newToolbarIcon(assets.AddCompany, func() {}) //TODO: implementar dps
 	// mother box
 	return container.NewVBox(
 		iconBox,
 		widget.NewSeparator(),
-		companiesLabel,
+		container.NewHBox(uiUtils.HPadding(8), companiesLabel, layout.NewSpacer(), addCompanyIcon, uiUtils.HPadding(8)),
 	)
 }
