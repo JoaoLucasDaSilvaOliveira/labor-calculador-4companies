@@ -35,3 +35,21 @@ BEGIN
 END;
 
 CREATE INDEX IF NOT EXISTS idx_employee_company_id ON employee(company_id);
+
+CREATE TABLE IF NOT EXISTS receipt (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employee_id INTEGER NOT NULL,
+    FOREIGN KEY (employee_id) REFERENCES employee(id)
+);
+
+CREATE TABLE IF NOT EXISTS receipt_items (
+    receipt_id INTEGER NOT NULL,
+    position INTEGER NOT NULL,
+    description TEXT NOT NULL,
+    decimal_value TEXT NOT NULL,
+    value_type INTEGER NOT NULL,
+    FOREIGN KEY (receipt_id) REFERENCES receipt(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_receipt_items_receipt_id ON receipt_items(receipt_id);
+CREATE INDEX IF NOT EXISTS idx_receipt_employee_id ON receipt(employee_id);

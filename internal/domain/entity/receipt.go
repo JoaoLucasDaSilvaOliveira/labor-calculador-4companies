@@ -21,7 +21,7 @@ const (
 	Informativo
 )
 
-//compositions objects declarations
+// compositions objects declarations
 type ReceiptValueAndDescription struct {
 	Description  string
 	DecimalValue decimal.Decimal
@@ -32,24 +32,26 @@ type ReceiptItem interface {
 	Value() ReceiptValueAndDescription
 }
 
-//main object declaration
+// main object declaration
 type Receipt struct {
-	id    int
-	Items []ReceiptItem
+	id         int
+	idEmployee int
+	Items      []ReceiptItem
 }
 
-func NewReceipt(items []ReceiptItem) *Receipt {
+func NewReceipt(idEmployee int, items []ReceiptItem) *Receipt {
 	receipt := new(Receipt)
+	receipt.idEmployee = idEmployee
 
 	for _, item := range items {
 		receipt.AddInformationItems(item)
 	}
-	
+
 	return receipt
 }
 
-func LoadReceipt(id int, items []ReceiptItem) (*Receipt, error) {
-	receipt := NewReceipt(items)
+func LoadReceipt(id int, idEmployee int, items []ReceiptItem) (*Receipt, error) {
+	receipt := NewReceipt(idEmployee, items)
 
 	if err := receipt.SetId(id); err != nil {
 		return nil, err
@@ -69,6 +71,14 @@ func (r *Receipt) SetId(id int) error {
 
 	r.id = id
 	return nil
+}
+
+func (r *Receipt)GetEmployeeId() int {
+	return r.idEmployee
+}
+
+func (r *Receipt)SetEmployeeId(id int) {
+	r.idEmployee = id
 }
 
 func (r *Receipt) AddInformationItems(item ReceiptItem) {
