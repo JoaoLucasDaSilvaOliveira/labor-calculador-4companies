@@ -9,6 +9,6 @@ type EmployeeRepository interface {
 	Create(employee *entity.Employee) error
 	Update(employee *entity.Employee) error
 	Delete(sequencialID int) error
-	Get(filter query.GetEmployeeWithFilter) ([]*entity.Employee, error)
+	GetByCompanyIdWithFilter(filter query.GetEmployeeWithFilter) ([]*entity.Employee, error) //GET
 	GetByID(sequencialID int) (*entity.Employee, error)
 }

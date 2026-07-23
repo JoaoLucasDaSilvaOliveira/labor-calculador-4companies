@@ -64,7 +64,7 @@ func NewGetEmployeeUsecase(repository repository.EmployeeRepository) *GetEmploye
 	return &GetEmployeeUsecase{repository: repository}
 }
 func (uc *GetEmployeeUsecase) Execute(qry query.GetEmployeeWithFilter) ([]*entity.Employee, error) {
-	return uc.repository.Get(qry)
+	return uc.repository.GetByCompanyIdWithFilter(qry)
 }
 
 //---------------------------------------------------------------------------------

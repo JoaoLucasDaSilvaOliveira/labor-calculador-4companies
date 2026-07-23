@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"fmt"
 	query "labor-calculador-4companies/internal/application/query/employee"
 	"labor-calculador-4companies/internal/domain/entity"
 	"labor-calculador-4companies/internal/domain/repository"
@@ -58,16 +59,13 @@ func (r *EmployeeRepository) Delete(sequencialID int) error {
 	return r.db.Delete(&employeeModel{}, sequencialID).Error
 }
 
-func (r *EmployeeRepository) Get(filter query.GetEmployeeWithFilter) ([]*entity.Employee, error) {
-	dbQuery := r.db.Model(&employeeModel{})
-
-	if filter.IDEmployee > 0 {
-		dbQuery = dbQuery.Where("id = ?", filter.IDEmployee)
+func (r *EmployeeRepository) GetByCompanyIdWithFilter(filter query.GetEmployeeWithFilter) ([]*entity.Employee, error) {
+	//company id is not optional
+	if filter.CompanyID <= 0 {
+		return nil, fmt.Errorf("é preciso informar o id da empresa")
 	}
 
-	if filter.CompanyID > 0 {
-		dbQuery = dbQuery.Where("company_id = ?", filter.CompanyID)
-	}
+	dbQuery := r.db.Model(&employeeModel{}).Where("company_id = ?", filter.CompanyID)
 
 	if filter.FirstName != "" {
 		dbQuery = dbQuery.Where("first_name LIKE ? COLLATE NOCASE", "%"+filter.FirstName+"%")
