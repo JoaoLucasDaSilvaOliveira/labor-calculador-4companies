@@ -4,24 +4,27 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"github.com/JoaoLucasDaSilvaOliveira/learning-fyne/classes/utils"
-	usecase "labor-calculador-4companies/internal/application/usecase/company"
 )
 
 type MainApplication struct {
-	//fyne basic components
-	Application  fyne.App
-	MasterWindow fyne.Window
-	//app usecases
-	GetCompaniesUC *usecase.GetCompanyUsecase
+	application  fyne.App
+	masterWindow fyne.Window
 }
 
-// like a main func but for ui
+// NewApplication creates the Fyne application shell without building pages.
 func NewApplication() *MainApplication {
 	application := app.NewWithID("labor.calculator.4companies.app")
 	window := utils.NewWindowWithSize(application, "Calculadora Trabalhista")
 	window.SetMaster()
+
 	return &MainApplication{
-		Application:  application,
-		MasterWindow: window,
+		application:  application,
+		masterWindow: window,
 	}
+}
+
+// Run mounts the stable root view and starts the desktop event loop.
+func (a *MainApplication) Run(rootView fyne.CanvasObject) {
+	a.masterWindow.SetContent(rootView)
+	a.masterWindow.ShowAndRun()
 }

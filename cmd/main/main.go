@@ -7,7 +7,7 @@ import (
 	"labor-calculador-4companies/internal/infra/config"
 	"labor-calculador-4companies/internal/infra/persistence/sqlite"
 	uiApplication "labor-calculador-4companies/internal/ui/application"
-	"labor-calculador-4companies/internal/ui/pages"
+	"labor-calculador-4companies/internal/ui/navigation"
 
 	"github.com/joho/godotenv"
 )
@@ -33,10 +33,15 @@ func main() {
 	companyRepository := sqlite.NewCompanyRepository(database)
 	getCompaniesUseCase := companyUC.NewGetCompanyUsecase(companyRepository)
 
-	// UI
+	// UI APPLICATION, ROUTER AND PAGE PROVIDER
 	application := uiApplication.NewApplication()
-	application.GetCompaniesUC = getCompaniesUseCase
-	pages.NewHomePage(application)
+	router := navigation.NewRouter(navigation.RouteHome)
+	routeProvider := newUIRouteProvider(getCompaniesUseCase, router)
 
-	application.MasterWindow.ShowAndRun()
+	if err := routeProvider.Register(router); err != nil {
+		log.Fatalf("erro ao registrar as rotas da interface: %v", err)
+	}
+
+	// DESKTOP EVENT LOOP
+	application.Run(router.View())
 }

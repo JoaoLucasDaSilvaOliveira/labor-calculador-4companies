@@ -1,0 +1,25 @@
+{
+	"nodes":[
+		{"id":"1a1c23a4981dcaef","type":"file","file":"LaborCalculator4Companies - UI/ui-images/homepage_v.1.0.0.png","x":-820,"y":-660,"width":1208,"height":752},
+		{"id":"0f86d7acceb9f4c3","type":"file","file":"LaborCalculator4Companies - UI/ui-images/homepage_v.1.0.1.png","x":440,"y":-660,"width":1202,"height":752},
+		{"id":"1479df96cb62e08b","type":"text","text":"ESTADO PASSO 1","x":-700,"y":160,"width":250,"height":60,"color":"5"},
+		{"id":"b1a260c6d21eca17","type":"text","text":"ESTADO PASSO 2","x":580,"y":160,"width":250,"height":60,"color":"5"},
+		{"id":"e62d99a903019b15","type":"file","file":"LaborCalculator4Companies - UI/ui-images/homepage_v.1.0.2-A.png","x":1720,"y":-657,"width":1200,"height":749},
+		{"id":"ed2bfa8605c6a242","type":"file","file":"LaborCalculator4Companies - UI/ui-images/homepage_v.1.0.2-B.png","x":1720,"y":200,"width":1200,"height":755},
+		{"id":"a733d10d3e81610f","type":"file","file":"LaborCalculator4Companies - UI/ui-images/homepage_v.1.0.2-C.png","x":1720,"y":1040,"width":1180,"height":740},
+		{"id":"0a9076bc1014e9f7","type":"text","text":"MÚLTIPLOS ESTADOS DIFERENTES","x":3200,"y":1328,"width":360,"height":50,"color":"5"},
+		{"id":"b60ec1ffe98504da","type":"text","text":"ESTADO PASSO 3","x":1420,"y":150,"width":250,"height":50,"color":"5"},
+		{"id":"f93e28272993bd50","type":"file","file":"LaborCalculator4Companies - UI/ui-images/homepage_v.1.0.2.webm","x":3325,"y":235,"width":1280,"height":720}
+	],
+	"edges":[
+		{"id":"8ab142f21469ca43","fromNode":"b1a260c6d21eca17","fromSide":"right","toNode":"0f86d7acceb9f4c3","toSide":"bottom","color":"4"},
+		{"id":"b4beaa27eaf34853","fromNode":"1479df96cb62e08b","fromSide":"right","toNode":"1a1c23a4981dcaef","toSide":"bottom","color":"4"},
+		{"id":"3efdf3d746872a8e","fromNode":"1a1c23a4981dcaef","fromSide":"top","toNode":"0f86d7acceb9f4c3","toSide":"top","color":"6","label":"NOVA VERSÃO"},
+		{"id":"d7979faa4ac62406","fromNode":"0f86d7acceb9f4c3","fromSide":"top","toNode":"e62d99a903019b15","toSide":"top","color":"6","label":"NOVA VERSÃO"},
+		{"id":"baea8d4a061548ed","fromNode":"0a9076bc1014e9f7","fromSide":"top","toNode":"ed2bfa8605c6a242","toSide":"right","color":"3"},
+		{"id":"9e109206427a9c8f","fromNode":"0a9076bc1014e9f7","fromSide":"top","toNode":"e62d99a903019b15","toSide":"right","color":"3"},
+		{"id":"2ece459b80d50e81","fromNode":"0a9076bc1014e9f7","fromSide":"top","toNode":"f93e28272993bd50","toSide":"bottom","color":"3"},
+		{"id":"496ac4975df71bd6","fromNode":"0a9076bc1014e9f7","fromSide":"top","toNode":"a733d10d3e81610f","toSide":"right","color":"3"},
+		{"id":"256cf9db5bf7007d","fromNode":"b60ec1ffe98504da","fromSide":"right","toNode":"e62d99a903019b15","toSide":"bottom","color":"4"}
+	]
+}
