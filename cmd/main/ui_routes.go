@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	ErrOnOpenHome = error_factory.NewError("erro ao abrir a página inicial")
+	ErrOnOpenMain = error_factory.NewError("erro ao abrir a página inicial")
 )
 
 // uiRouteProvider adapts application routes to page constructors.
@@ -33,7 +33,7 @@ func newUIRouteProvider(
 }
 
 func (p *uiRouteProvider) Register(router *navigation.Router) error {
-	if err := router.Register(navigation.RouteHome, p.homePage); err != nil {
+	if err := router.Register(navigation.RouteMain, p.mainPage); err != nil {
 		return err
 	}
 	if err := router.Register(navigation.RouteCompanyDetails, p.companyPage); err != nil {
@@ -45,15 +45,15 @@ func (p *uiRouteProvider) Register(router *navigation.Router) error {
 	if err := router.Register(navigation.RouteCalculationCreate, p.calculationCreationPage); err != nil {
 		return err
 	}
-	if err := router.Replace(navigation.RouteHome, nil); err != nil {
-		return fmt.Errorf("%w: %w", ErrOnOpenHome, err)
+	if err := router.Replace(navigation.RouteMain, nil); err != nil {
+		return fmt.Errorf("%w: %w", ErrOnOpenMain, err)
 	}
 
 	return nil
 }
 
-func (p *uiRouteProvider) homePage(_ any) (fyne.CanvasObject, error) {
-	return pages.NewHomePage(pages.HomePageDeps{
+func (p *uiRouteProvider) mainPage(_ any) (fyne.CanvasObject, error) {
+	return pages.NewMainPage(pages.MainPageDeps{
 		Companies: p.getCompanies,
 		Navigator: p.navigator,
 	}), nil

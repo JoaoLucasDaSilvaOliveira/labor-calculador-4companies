@@ -35,7 +35,7 @@ func main() {
 
 	// UI APPLICATION, ROUTER AND PAGE PROVIDER
 	application := uiApplication.NewApplication()
-	router := navigation.NewRouter(navigation.RouteHome)
+	router := navigation.NewRouter(navigation.RouteMain)
 	routeProvider := newUIRouteProvider(getCompaniesUseCase, router)
 
 	if err := routeProvider.Register(router); err != nil {

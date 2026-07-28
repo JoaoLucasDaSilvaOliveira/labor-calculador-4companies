@@ -4,7 +4,7 @@ package navigation
 type RouteID string
 
 const (
-	RouteHome              RouteID = "home"
+	RouteMain              RouteID = "main"
 	RouteCompanyDetails    RouteID = "company.details"
 	RouteCompanyCreate     RouteID = "company.create"
 	RouteCalculationCreate RouteID = "calculation.create"

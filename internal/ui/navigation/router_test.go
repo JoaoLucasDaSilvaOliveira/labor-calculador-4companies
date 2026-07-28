@@ -18,8 +18,8 @@ func TestRouterPushAndBackRestoreHistory(t *testing.T) {
 	t.Cleanup(fyneApp.Quit)
 
 	router := newTestRouter(t)
-	if err := router.Replace(RouteHome, nil); err != nil {
-		t.Fatalf("Replace(RouteHome) returned an error: %v", err)
+	if err := router.Replace(RouteMain, nil); err != nil {
+		t.Fatalf("Replace(RouteMain) returned an error: %v", err)
 	}
 
 	params := CompanyDetailsParams{CompanyID: 42}
@@ -40,8 +40,8 @@ func TestRouterPushAndBackRestoreHistory(t *testing.T) {
 	if wentBack := router.Back(); !wentBack {
 		t.Fatal("Back() = false, want true")
 	}
-	if current := router.Current(); current != RouteHome {
-		t.Fatalf("Current() after Back = %q, want %q", current, RouteHome)
+	if current := router.Current(); current != RouteMain {
+		t.Fatalf("Current() after Back = %q, want %q", current, RouteMain)
 	}
 	if router.CanGoBack() {
 		t.Fatal("CanGoBack() after Back = true, want false")
@@ -53,8 +53,8 @@ func TestRouterReplaceDoesNotAddHistory(t *testing.T) {
 	t.Cleanup(fyneApp.Quit)
 
 	router := newTestRouter(t)
-	if err := router.Replace(RouteHome, nil); err != nil {
-		t.Fatalf("Replace(RouteHome) returned an error: %v", err)
+	if err := router.Replace(RouteMain, nil); err != nil {
+		t.Fatalf("Replace(RouteMain) returned an error: %v", err)
 	}
 	if err := router.Replace(
 		routeTestDetails,
@@ -76,16 +76,16 @@ func TestRouterUsesFallbackForUnknownRoute(t *testing.T) {
 	t.Cleanup(fyneApp.Quit)
 
 	router := newTestRouter(t)
-	if err := router.Replace(RouteHome, nil); err != nil {
-		t.Fatalf("Replace(RouteHome) returned an error: %v", err)
+	if err := router.Replace(RouteMain, nil); err != nil {
+		t.Fatalf("Replace(RouteMain) returned an error: %v", err)
 	}
 
 	err := router.Push(RouteID("unknown"), nil)
 	if !errors.Is(err, ErrRouteNotFound) {
 		t.Fatalf("Push(unknown) error = %v, want ErrRouteNotFound", err)
 	}
-	if current := router.Current(); current != RouteHome {
-		t.Fatalf("Current() = %q, want fallback %q", current, RouteHome)
+	if current := router.Current(); current != RouteMain {
+		t.Fatalf("Current() = %q, want fallback %q", current, RouteMain)
 	}
 	if len(router.history) != 1 {
 		t.Fatalf("history length = %d, want 1", len(router.history))
@@ -97,8 +97,8 @@ func TestRouterLatestNavigationWinsDuringTransition(t *testing.T) {
 	t.Cleanup(fyneApp.Quit)
 
 	router := newTestRouter(t)
-	if err := router.Replace(RouteHome, nil); err != nil {
-		t.Fatalf("Replace(RouteHome) returned an error: %v", err)
+	if err := router.Replace(RouteMain, nil); err != nil {
+		t.Fatalf("Replace(RouteMain) returned an error: %v", err)
 	}
 	if err := router.Push(
 		routeTestDetails,
@@ -110,8 +110,8 @@ func TestRouterLatestNavigationWinsDuringTransition(t *testing.T) {
 	router.Back()
 	time.Sleep(canvas.DurationShort * 3)
 
-	if current := router.Current(); current != RouteHome {
-		t.Fatalf("Current() = %q, want latest route %q", current, RouteHome)
+	if current := router.Current(); current != RouteMain {
+		t.Fatalf("Current() = %q, want latest route %q", current, RouteMain)
 	}
 
 	outlet := router.View().(*fyne.Container)
@@ -119,21 +119,21 @@ func TestRouterLatestNavigationWinsDuringTransition(t *testing.T) {
 	if !ok {
 		t.Fatalf("rendered object type = %T, want *widget.Label", outlet.Objects[0])
 	}
-	if renderedLabel.Text != "Home" {
-		t.Fatalf("rendered label = %q, want Home", renderedLabel.Text)
+	if renderedLabel.Text != "Main" {
+		t.Fatalf("rendered label = %q, want Main", renderedLabel.Text)
 	}
 }
 
 func TestRouterRejectsDuplicateRegistration(t *testing.T) {
-	router := NewRouter(RouteHome)
+	router := NewRouter(RouteMain)
 	factory := func(_ any) (fyne.CanvasObject, error) {
-		return widget.NewLabel("Home"), nil
+		return widget.NewLabel("Main"), nil
 	}
 
-	if err := router.Register(RouteHome, factory); err != nil {
+	if err := router.Register(RouteMain, factory); err != nil {
 		t.Fatalf("first Register returned an error: %v", err)
 	}
-	if err := router.Register(RouteHome, factory); !errors.Is(err, ErrRouteAlreadyAdded) {
+	if err := router.Register(RouteMain, factory); !errors.Is(err, ErrRouteAlreadyAdded) {
 		t.Fatalf("second Register error = %v, want ErrRouteAlreadyAdded", err)
 	}
 }
@@ -141,14 +141,14 @@ func TestRouterRejectsDuplicateRegistration(t *testing.T) {
 func newTestRouter(t *testing.T) *Router {
 	t.Helper()
 
-	router := NewRouter(RouteHome)
+	router := NewRouter(RouteMain)
 	if err := router.Register(
-		RouteHome,
+		RouteMain,
 		func(_ any) (fyne.CanvasObject, error) {
-			return widget.NewLabel("Home"), nil
+			return widget.NewLabel("Main"), nil
 		},
 	); err != nil {
-		t.Fatalf("Register(RouteHome) returned an error: %v", err)
+		t.Fatalf("Register(RouteMain) returned an error: %v", err)
 	}
 	if err := router.Register(
 		routeTestDetails,
