@@ -39,6 +39,7 @@ CREATE INDEX IF NOT EXISTS idx_employee_company_id ON employee(company_id);
 CREATE TABLE IF NOT EXISTS receipt (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     employee_id INTEGER NOT NULL,
+    sumary_description TEXT NOT NULL DEFAULT '',
     FOREIGN KEY (employee_id) REFERENCES employee(id)
 );
 

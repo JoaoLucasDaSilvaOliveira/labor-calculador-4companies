@@ -3,6 +3,7 @@ package entity
 import (
 	"fmt"
 	error_factory "labor-calculador-4companies/internal/domain/error"
+	"strings"
 
 	"github.com/shopspring/decimal"
 )
@@ -34,14 +35,16 @@ type ReceiptItem interface {
 
 // main object declaration
 type Receipt struct {
-	id         int
-	idEmployee int
-	Items      []ReceiptItem
+	id                int
+	idEmployee        int
+	sumaryDescription string
+	Items             []ReceiptItem
 }
 
-func NewReceipt(idEmployee int, items []ReceiptItem) *Receipt {
+func NewReceipt(idEmployee int, sumaryDescription string, items []ReceiptItem) *Receipt {
 	receipt := new(Receipt)
 	receipt.idEmployee = idEmployee
+	receipt.sumaryDescription = strings.TrimSpace(sumaryDescription)
 
 	for _, item := range items {
 		receipt.AddInformationItems(item)
@@ -50,8 +53,8 @@ func NewReceipt(idEmployee int, items []ReceiptItem) *Receipt {
 	return receipt
 }
 
-func LoadReceipt(id int, idEmployee int, items []ReceiptItem) (*Receipt, error) {
-	receipt := NewReceipt(idEmployee, items)
+func LoadReceipt(id int, idEmployee int, sumaryDescription string, items []ReceiptItem) (*Receipt, error) {
+	receipt := NewReceipt(idEmployee, sumaryDescription, items)
 
 	if err := receipt.SetId(id); err != nil {
 		return nil, err
@@ -73,12 +76,20 @@ func (r *Receipt) SetId(id int) error {
 	return nil
 }
 
-func (r *Receipt)GetEmployeeId() int {
+func (r *Receipt) GetEmployeeId() int {
 	return r.idEmployee
 }
 
-func (r *Receipt)SetEmployeeId(id int) {
+func (r *Receipt) SetEmployeeId(id int) {
 	r.idEmployee = id
+}
+
+func (r *Receipt) GetSumaryDescription() string {
+	return r.sumaryDescription
+}
+
+func (r *Receipt) SetSumaryDescription(sumaryDescription string) {
+	r.sumaryDescription = strings.TrimSpace(sumaryDescription)
 }
 
 func (r *Receipt) AddInformationItems(item ReceiptItem) {

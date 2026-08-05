@@ -16,7 +16,7 @@ func NewCreateReceiptUsecase(repository repository.ReceiptRepository) *CreateRec
 }
 
 func (uc *CreateReceiptUsecase) Execute(cmd command.CreateReceiptCommand) error {
-	receipt := entity.NewReceipt(cmd.EmployeeID, cmd.Items)
+	receipt := entity.NewReceipt(cmd.EmployeeID, cmd.SumaryDescription, cmd.Items)
 
 	return uc.repository.Create(receipt)
 }
@@ -46,7 +46,7 @@ func NewUpdateReceiptUsecase(repository repository.ReceiptRepository) *UpdateRec
 }
 
 func (uc *UpdateReceiptUsecase) Execute(cmd command.UpdateReceiptCommand) error {
-	receipt, err := entity.LoadReceipt(cmd.IDReceipt, cmd.EmployeeID, cmd.Items)
+	receipt, err := entity.LoadReceipt(cmd.IDReceipt, cmd.EmployeeID, cmd.SumaryDescription, cmd.Items)
 	if err != nil {
 		return err
 	}
