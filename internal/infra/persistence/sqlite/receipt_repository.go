@@ -15,8 +15,9 @@ type ReceiptRepository struct {
 }
 
 type receiptModel struct {
-	ID         int `gorm:"column:id;primaryKey;autoIncrement"`
-	IDEmployee int `gorm:"column:employee_id"`
+	ID                int    `gorm:"column:id;primaryKey;autoIncrement"`
+	IDEmployee        int    `gorm:"column:employee_id"`
+	SumaryDescription string `gorm:"column:sumary_description"`
 }
 
 func (receiptModel) TableName() string {
@@ -48,7 +49,10 @@ func NewReceiptRepository(db *gorm.DB) repository.ReceiptRepository {
 }
 
 func (r *ReceiptRepository) Create(receipt *entity.Receipt) error {
-	model := receiptModel{IDEmployee: receipt.GetEmployeeId()}
+	model := receiptModel{
+		IDEmployee:        receipt.GetEmployeeId(),
+		SumaryDescription: receipt.GetSumaryDescription(),
+	}
 
 	if err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&model).Error; err != nil {
@@ -66,8 +70,9 @@ func (r *ReceiptRepository) Create(receipt *entity.Receipt) error {
 func (r *ReceiptRepository) Update(receipt *entity.Receipt) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		model := receiptModel{
-			ID:         receipt.GetId(),
-			IDEmployee: receipt.GetEmployeeId(),
+			ID:                receipt.GetId(),
+			IDEmployee:        receipt.GetEmployeeId(),
+			SumaryDescription: receipt.GetSumaryDescription(),
 		}
 		if err := tx.Save(&model).Error; err != nil {
 			return err
@@ -137,7 +142,7 @@ func (r *ReceiptRepository) GetByID(sequencialID int) (*entity.Receipt, error) {
 		return nil, err
 	}
 
-	return entity.LoadReceipt(model.ID, model.IDEmployee, items)
+	return entity.LoadReceipt(model.ID, model.IDEmployee, model.SumaryDescription, items)
 }
 
 func createReceiptItems(db *gorm.DB, receiptID int, values []entity.ReceiptValueAndDescription) error {

@@ -44,7 +44,57 @@ func OpenDB(cfg *config.SQLiteConfig) (*gorm.DB, error) {
 		return nil, err
 	}
 
+	if err := ensureReceiptSummaryDescriptionColumn(db); err != nil {
+		return nil, err
+	}
+
 	return dbPtr, nil
+}
+
+func ensureReceiptSummaryDescriptionColumn(db *sql.DB) error {
+	if _, err := db.Exec("DROP TRIGGER IF EXISTS set_receipt_summary_description"); err != nil {
+		return fmt.Errorf("erro ao remover trigger da descrição resumida do recibo: %w", err)
+	}
+
+	if _, err := db.Exec("DROP TRIGGER IF EXISTS restore_receipt_summary_description"); err != nil {
+		return fmt.Errorf("erro ao remover trigger de restauração da descrição resumida do recibo: %w", err)
+	}
+
+	rows, err := db.Query("PRAGMA table_info(receipt)")
+	if err != nil {
+		return fmt.Errorf("erro ao inspecionar tabela receipt: %w", err)
+	}
+	defer rows.Close()
+
+	hasSummaryDescription := false
+	for rows.Next() {
+		var cid int
+		var name, columnType string
+		var notNull int
+		var defaultValue any
+		var pk int
+
+		if err := rows.Scan(&cid, &name, &columnType, &notNull, &defaultValue, &pk); err != nil {
+			return fmt.Errorf("erro ao ler colunas de receipt: %w", err)
+		}
+
+		if name == "sumary_description" {
+			hasSummaryDescription = true
+			break
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return fmt.Errorf("erro ao verificar colunas de receipt: %w", err)
+	}
+
+	if !hasSummaryDescription {
+		if _, err := db.Exec("ALTER TABLE receipt ADD COLUMN sumary_description TEXT NOT NULL DEFAULT ''"); err != nil {
+			return fmt.Errorf("erro ao adicionar descrição resumida do recibo: %w", err)
+		}
+	}
+
+	return nil
 }
 
 func initDBMinimalSchema(db *sql.DB, schemaDirPath string) error {
