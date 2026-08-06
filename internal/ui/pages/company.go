@@ -62,10 +62,7 @@ func NewCompanyRegistrationPage(navigator navigation.Navigator) fyne.CanvasObjec
 	return newPageWithBackAction(content, navigator)
 }
 
-func newPageWithBackAction(
-	content fyne.CanvasObject,
-	navigator navigation.Navigator,
-) fyne.CanvasObject {
+func newPageWithBackAction(content fyne.CanvasObject, navigator navigation.Navigator) fyne.CanvasObject {
 	backButton := widget.NewButtonWithIcon("Voltar", theme.NavigateBackIcon(), func() {
 		navigator.Back()
 	})

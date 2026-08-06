@@ -12,3 +12,9 @@ func HPadding(width float32) fyne.CanvasObject {
 	r.SetMinSize(fyne.NewSize(width, 1))
 	return r
 }
+
+func VPadding(height float32) fyne.CanvasObject {
+	r := canvas.NewRectangle(color.Transparent)
+	r.SetMinSize(fyne.NewSize(1, height))
+	return r
+}

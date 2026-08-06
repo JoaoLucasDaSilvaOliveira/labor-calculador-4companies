@@ -21,11 +21,7 @@ type MainPageSidebarDeps struct {
 	OnAddCompany      func()
 }
 
-func NewOpenedMainPageSidebar(
-	deps MainPageSidebarDeps,
-	onCloseSidebar func(),
-	onSearch func(),
-) *fyne.Container {
+func NewOpenedMainPageSidebar(deps MainPageSidebarDeps, onCloseSidebar func(), onSearch func()) *fyne.Container {
 	toolbar := newSidebarToolbar(
 		onCloseSidebar,
 		assets.MagnifingGlass,
@@ -56,11 +52,7 @@ func NewClosedMainPageSidebar(onOpenSidebar func()) *fyne.Container {
 	return container.NewBorder(topSection, nil, nil, nil, nil)
 }
 
-func NewSearchMainPageSidebar(
-	deps MainPageSidebarDeps,
-	onCloseSidebar func(),
-	onCloseSearch func(),
-) *fyne.Container {
+func NewSearchMainPageSidebar(deps MainPageSidebarDeps, onCloseSidebar func(), onCloseSearch func()) *fyne.Container {
 	toolbar := newSidebarToolbar(
 		onCloseSidebar,
 		assets.CloseMagnifingGlass,
@@ -103,12 +95,7 @@ func newToolbarIcon(resource fyne.Resource, tapped func()) *widget.Button {
 	})
 }
 
-func newSidebarToolbar(
-	onCloseSidebar func(),
-	actionIcon fyne.Resource,
-	onAction func(),
-	onAddCompany func(),
-) *fyne.Container {
+func newSidebarToolbar(onCloseSidebar func(), actionIcon fyne.Resource, onAction func(), onAddCompany func()) *fyne.Container {
 	closeIcon := newToolbarIcon(assets.OpenTabIcon, onCloseSidebar)
 	actionIconButton := newToolbarIcon(actionIcon, onAction)
 	iconBox := container.NewHBox(

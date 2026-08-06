@@ -23,10 +23,7 @@ type CompanyFinder interface {
 }
 
 // NewCompaniesListComponent creates the complete company list.
-func NewCompaniesListComponent(
-	finder CompanyFinder,
-	onCompanySelected func(companyID int),
-) fyne.CanvasObject {
+func NewCompaniesListComponent(finder CompanyFinder, onCompanySelected func(companyID int)) fyne.CanvasObject {
 	return newCompaniesList(
 		finder,
 		query.GetCompanyWithFilter{},
@@ -36,11 +33,7 @@ func NewCompaniesListComponent(
 }
 
 // NewCompaniesSearchByNameListComponent creates a company list filtered by name.
-func NewCompaniesSearchByNameListComponent(
-	finder CompanyFinder,
-	companyName string,
-	onCompanySelected func(companyID int),
-) fyne.CanvasObject {
+func NewCompaniesSearchByNameListComponent(finder CompanyFinder, companyName string, onCompanySelected func(companyID int)) fyne.CanvasObject {
 	trimmedName := strings.TrimSpace(companyName)
 	if trimmedName == "" {
 		return newStatusLabel("Digite um nome para buscar.")
@@ -54,12 +47,7 @@ func NewCompaniesSearchByNameListComponent(
 	)
 }
 
-func newCompaniesList(
-	finder CompanyFinder,
-	filter query.GetCompanyWithFilter,
-	emptyMessage string,
-	onCompanySelected func(companyID int),
-) fyne.CanvasObject {
+func newCompaniesList(finder CompanyFinder, filter query.GetCompanyWithFilter, emptyMessage string, onCompanySelected func(companyID int)) fyne.CanvasObject {
 	companies, err := finder.Execute(filter)
 	if err != nil {
 		return newStatusLabel(companiesLoadErrorMessage)

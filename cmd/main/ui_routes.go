@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	companyUC "labor-calculador-4companies/internal/application/usecase/company"
+	error_factory "labor-calculador-4companies/internal/domain/error"
 	"labor-calculador-4companies/internal/ui/navigation"
 	"labor-calculador-4companies/internal/ui/pages"
-	error_factory "labor-calculador-4companies/internal/domain/error"
 
 	"fyne.io/fyne/v2"
 )
@@ -22,10 +22,7 @@ type uiRouteProvider struct {
 	navigator    navigation.Navigator
 }
 
-func newUIRouteProvider(
-	getCompanies *companyUC.GetCompanyUsecase,
-	navigator navigation.Navigator,
-) *uiRouteProvider {
+func newUIRouteProvider(getCompanies *companyUC.GetCompanyUsecase, navigator navigation.Navigator) *uiRouteProvider {
 	return &uiRouteProvider{
 		getCompanies: getCompanies,
 		navigator:    navigator,

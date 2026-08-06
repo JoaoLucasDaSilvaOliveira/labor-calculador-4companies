@@ -58,7 +58,7 @@ func (p *mainPage) build() fyne.CanvasObject {
 	p.sidebarContent = components.NewAnimatedContent()
 	p.sidebarHost = p.sidebarContent.View()
 
-	p.split = container.NewHSplit(p.sidebarHost, p.buildQuickAccess())
+	p.split = container.NewHSplit(p.sidebarHost, p.buildQuickAccess()) // AQUI ENTRA O WORKSPACE
 	p.split.SetOffset(mainPageOpenedSplitOffset)
 
 	p.renderSidebar()
@@ -188,20 +188,14 @@ func (p *mainPage) buildSidebar(state mainPageSidebarState) fyne.CanvasObject {
 	}
 }
 
-func (p *mainPage) setInitialSidebar(
-	sidebar fyne.CanvasObject,
-	state mainPageSidebarState,
-) {
+func (p *mainPage) setInitialSidebar(sidebar fyne.CanvasObject, state mainPageSidebarState) {
 	p.sidebarContent.SetContent(sidebar, nil)
 	p.renderedSidebarState = state
 	p.hasRenderedSidebar = true
 	p.split.SetOffset(mainPageOpenedSplitOffset)
 }
 
-func (p *mainPage) expandSidebar(
-	nextSidebar fyne.CanvasObject,
-	targetState mainPageSidebarState,
-) {
+func (p *mainPage) expandSidebar(nextSidebar fyne.CanvasObject, targetState mainPageSidebarState) {
 	p.animateSplitOffset(p.minimumOffset(nextSidebar), func() {
 		p.sidebarContent.SetContent(nextSidebar, func() {
 			p.renderedSidebarState = targetState
@@ -210,10 +204,7 @@ func (p *mainPage) expandSidebar(
 	})
 }
 
-func (p *mainPage) collapseSidebar(
-	nextSidebar fyne.CanvasObject,
-	targetState mainPageSidebarState,
-) {
+func (p *mainPage) collapseSidebar(nextSidebar fyne.CanvasObject, targetState mainPageSidebarState) {
 	p.animateSplitOffset(p.minimumOffset(p.sidebarHost), func() {
 		p.sidebarContent.SetContent(nextSidebar, func() {
 			p.renderedSidebarState = targetState
@@ -222,10 +213,7 @@ func (p *mainPage) collapseSidebar(
 	})
 }
 
-func (p *mainPage) swapSidebar(
-	nextSidebar fyne.CanvasObject,
-	targetState mainPageSidebarState,
-) {
+func (p *mainPage) swapSidebar(nextSidebar fyne.CanvasObject, targetState mainPageSidebarState) {
 	p.sidebarContent.SetContent(nextSidebar, func() {
 		p.renderedSidebarState = targetState
 	})
@@ -289,4 +277,4 @@ func (p *mainPage) navigate(route navigation.RouteID, params any) {
 	if err := p.deps.Navigator.Push(route, params); err != nil {
 		fyne.LogError("Não foi possível navegar para a página solicitada.", err)
 	}
-}
+} // VAI SER USADO SÓ NO FUTURO, WORKSPACE VAI PRECISAR DE UM MÉTODO COMO ESSE

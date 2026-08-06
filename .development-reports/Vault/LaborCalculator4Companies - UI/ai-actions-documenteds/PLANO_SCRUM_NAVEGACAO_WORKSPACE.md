@@ -419,33 +419,33 @@ go build -o /tmp/labor-calculator-main-build ./cmd/main
 
 ## 7. Product Backlog priorizado
 
-| ID | Item | Prioridade | Pontos | Sprint prevista |
-|---|---|---:|---:|---:|
-| PB-01 | Adicionar operação atômica `Reset` ao router | P0 | 5 | 1 |
-| PB-02 | Testar limpeza integral do histórico | P0 | 3 | 1 |
-| PB-03 | Definir política de falha durante `Reset` | P0 | 3 | 1 |
-| PB-04 | Criar controller/facade do workspace | P0 | 8 | 2 |
-| PB-05 | Controlar empresa ativa no workspace | P0 | 5 | 2 |
-| PB-06 | Extrair `QuickAccessPage` da homepage | P0 | 5 | 3 |
-| PB-07 | Transformar Homepage em MainPage persistente | P0 | 8 | 3 |
-| PB-08 | Montar `WorkspaceRouter.View()` no centro | P0 | 5 | 3 |
-| PB-09 | Separar RootRouter e WorkspaceRouter | P0 | 8 | 4 |
-| PB-10 | Separar providers de rotas | P0 | 5 | 4 |
-| PB-11 | Registrar fallbacks independentes | P0 | 3 | 4 |
-| PB-12 | Seleção de empresa executar Reset | P0 | 5 | 5 |
-| PB-13 | Abrir funcionário usando Push | P0 | 5 | 5 |
-| PB-14 | Voltar até a raiz da empresa | P0 | 3 | 5 |
-| PB-15 | Abrir lista de recibos por funcionário | P0 | 5 | 6 |
-| PB-16 | Abrir recibo usando Push | P0 | 5 | 6 |
-| PB-17 | Validar pertencimento ao contexto ativo | P0 | 8 | 6 |
-| PB-18 | Implementar `Close All` | P1 | 5 | 7 |
-| PB-19 | Adicionar estado visual do workspace | P1 | 3 | 7 |
-| PB-20 | Preparar confirmação de conteúdo não salvo | P2 | 8 | Futuro |
-| PB-21 | Adicionar lifecycle `OnShow`/`OnHide` | P2 | 8 | 8 |
-| PB-22 | Criar teste ponta a ponta da navegação | P1 | 8 | 8 |
-| PB-23 | Atualizar documentação arquitetural | P1 | 3 | Todas |
-| PB-24 | Criar rota fullscreen de recibo | P2 | 8 | Futuro |
-| PB-25 | Adicionar tabs de documentos | P2 | 13 | Futuro |
+| ID    | Item                                         | Prioridade | Pontos | Sprint prevista |
+| ----- | -------------------------------------------- | ---------: | -----: | --------------: |
+| PB-01 | Adicionar operação atômica `Reset` ao router |         P0 |      5 |               1 |
+| PB-02 | Testar limpeza integral do histórico         |         P0 |      3 |               1 |
+| PB-03 | Definir política de falha durante `Reset`    |         P0 |      3 |               1 |
+| PB-04 | Criar controller/facade do workspace         |         P0 |      8 |               2 |
+| PB-05 | Controlar empresa ativa no workspace         |         P0 |      5 |               2 |
+| PB-06 | Extrair `QuickAccessPage` da homepage        |         P0 |      5 |               3 |
+| PB-07 | Transformar Homepage em MainPage persistente |         P0 |      8 |               3 |
+| PB-08 | Montar `WorkspaceRouter.View()` no centro    |         P0 |      5 |               3 |
+| PB-09 | Separar RootRouter e WorkspaceRouter         |         P0 |      8 |               4 |
+| PB-10 | Separar providers de rotas                   |         P0 |      5 |               4 |
+| PB-11 | Registrar fallbacks independentes            |         P0 |      3 |               4 |
+| PB-12 | Seleção de empresa executar Reset            |         P0 |      5 |               5 |
+| PB-13 | Abrir funcionário usando Push                |         P0 |      5 |               5 |
+| PB-14 | Voltar até a raiz da empresa                 |         P0 |      3 |               5 |
+| PB-15 | Abrir lista de recibos por funcionário       |         P0 |      5 |               6 |
+| PB-16 | Abrir recibo usando Push                     |         P0 |      5 |               6 |
+| PB-17 | Validar pertencimento ao contexto ativo      |         P0 |      8 |               6 |
+| PB-18 | Implementar `Close All`                      |         P1 |      5 |               7 |
+| PB-19 | Adicionar estado visual do workspace         |         P1 |      3 |               7 |
+| PB-20 | Preparar confirmação de conteúdo não salvo   |         P2 |      8 |          Futuro |
+| PB-21 | Adicionar lifecycle `OnShow`/`OnHide`        |         P2 |      8 |               8 |
+| PB-22 | Criar teste ponta a ponta da navegação       |         P1 |      8 |               8 |
+| PB-23 | Atualizar documentação arquitetural          |         P1 |      3 |           Todas |
+| PB-24 | Criar rota fullscreen de recibo              |         P2 |      8 |          Futuro |
+| PB-25 | Adicionar tabs de documentos                 |         P2 |     13 |          Futuro |
 
 Prioridades:
 
@@ -523,14 +523,14 @@ produziria:
 
 ### Tarefas
 
-- [ ] Especificar `Reset` na documentação do router.
-- [ ] Decidir se `Reset` entra em `Navigator` ou em interface especializada.
-- [ ] Implementar construção da entrada antes da mutação.
-- [ ] Limpar o histórico de forma atômica.
-- [ ] Reutilizar `AnimatedContent`.
-- [ ] Manter a política `latest wins`.
-- [ ] Definir comportamento quando a rota de Reset falha.
-- [ ] Adicionar testes.
+- [x] Especificar `Reset` na documentação do router.
+- [x] Decidir se `Reset` entra em `Navigator` ou em interface especializada.
+- [x] Implementar construção da entrada antes da mutação.
+- [x] Limpar o histórico de forma atômica.
+- [x] Reutilizar `AnimatedContent`.
+- [x] Manter a política `latest wins`.
+- [x] Definir comportamento quando a rota de Reset falha.
+- [x] Adicionar testes.
 
 ### Decisão recomendada de interface
 
@@ -552,7 +552,7 @@ type WorkspaceNavigator interface {
 ```
 
 Assim, páginas comuns não precisam conhecer `Reset` diretamente.
-
+	
 ### Critérios de aceitação
 
 #### CA-01

@@ -128,6 +128,20 @@ func (r *Router) Current() RouteID {
 	return r.history[len(r.history)-1].route
 }
 
+func (r *Router) Reset(route RouteID, params any) error {
+	auxHistory := r.history
+	//points to a new slice with no items
+	r.history = make([]historyEntry, 0)
+
+	if err := r.Replace(route, params); err != nil {
+		//garantees that if an error occurs, the history is restored
+		r.history = append(auxHistory, r.history...)
+		return err
+	}
+
+	return nil
+}
+
 func (r *Router) buildEntry(route RouteID, params any) (historyEntry, error) {
 	factory, exists := r.factories[route]
 	if !exists {
