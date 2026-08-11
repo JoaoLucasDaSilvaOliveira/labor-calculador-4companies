@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"log"
+	"os"
 
 	companyUC "labor-calculador-4companies/internal/application/usecase/company"
 	"labor-calculador-4companies/internal/infra/config"
@@ -12,11 +14,15 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func init() {
-	godotenv.Load("/home/dev_jao/personal_projects/labor-calculator-for-companies/.env")
+func loadEnv() {
+	if err := godotenv.Load(); err != nil && !errors.Is(err, os.ErrNotExist) {
+		log.Fatalf("erro ao carregar .env: %v", err)
+	}
 }
 
 func main() {
+	loadEnv()
+
 	// CONFIG AND DATABASE
 	database, err := sqlite.OpenDB(config.LoadSQLiteConfig())
 	if err != nil {

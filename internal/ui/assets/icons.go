@@ -22,9 +22,21 @@ var (
 	//go:embed "icons/add-company-icon.png"
 	AddCompanypng []byte
 
+	//go:embed "icons/binoculars.png"
+	binocularsIconpng []byte
+
+	//go:embed "icons/delete-document.png"
+	deleteDocumentIconpng []byte
+
+	//go:embed "icons/edit.png"
+	editIconpng []byte
+
 	OpenTabIcon         = fyne.NewStaticResource("open-tab-icon.png", openTabIconpng)
 	CloseTabIcon        = fyne.NewStaticResource("close-tab-icon.png", closeTabIconpng)
 	MagnifingGlass      = fyne.NewStaticResource("m-glass.png", mGlassIconpng)
 	CloseMagnifingGlass = fyne.NewStaticResource("close-m-glass.png", CloseMGlassIconpng)
 	AddCompany          = fyne.NewStaticResource("add-company-icon.png", AddCompanypng)
+	BinocularsIcon      = fyne.NewStaticResource("binoculars.png", binocularsIconpng)
+	DeleteDocumentIcon  = fyne.NewStaticResource("delete-document.png", deleteDocumentIconpng)
+	EditIcon            = fyne.NewStaticResource("edit.png", editIconpng)
 )

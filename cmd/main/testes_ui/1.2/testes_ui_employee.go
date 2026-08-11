@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"image/color"
+	employeeCommand "labor-calculador-4companies/internal/application/command/employee"
+	receiptQuery "labor-calculador-4companies/internal/application/query/receipt"
 	"labor-calculador-4companies/internal/domain/entity"
+	"labor-calculador-4companies/internal/ui/assets"
 	uiUtils "labor-calculador-4companies/internal/ui/utils"
 	"strconv"
 
@@ -20,23 +23,40 @@ import (
 var displayInfoDisable = true
 
 func main() {
+	fmt.Println("antes de criar o app")
 	a := app.NewWithID("teste")
+	fmt.Println("depois de criar o app")
+	a.Settings().SetTheme(theme.LightTheme())
 
+	fmt.Println("antes de criar a janela")
 	w := utils.NewWindowWithSize(a, "")
+	fmt.Println("depois de criar a janela")
 
-	w.SetContent(employeeInformatiosComponent())
+	fmt.Println("antes de setar o conteudo")
+	// w.SetContent(employeeInformationsComponent()) //provide the instances later for testing
+	fmt.Println("depois setar o conteudo")
 
+	fmt.Println("executando show and run")
 	w.ShowAndRun()
 }
 
-func employeeInformatiosComponent() *fyne.Container {
+type EmployeeFinderById interface {
+	Execute(cmd employeeCommand.GetEmployeeById) (*entity.Employee, error)
+}
+
+func employeeInformationsComponent(employeeFinder EmployeeFinderById, employeeFinderCommand employeeCommand.GetEmployeeById, receiptFinder ReceiptFinder, onShowReceipt, onEditReceipt, onDeleteReceipt func(receiptID int)) *fyne.Container {
+	employee, err := employeeFinder.Execute(employeeFinderCommand)
+
+	if err != nil {
+		//todo: handle error
+	}
 	content := container.NewStack()
 
-	// employeeInfosDisabled := showEmployeeInformationsDisabled()
-	employeeInfosEnabled := showEmployeeInformationsEnabled()
+	// employeeInfosDisabled := showEmployeeInformationsDisabled(employee)
+	employeeInfosEnabled := showEmployeeInformationsEnabled(employee)
 	content.Add(employeeInfosEnabled)
 
-	employeeListComponent := NewEmployeeListComponent()
+	employeeListComponent := NewReceiptListComponent(receiptFinder, onShowReceipt, onEditReceipt, onDeleteReceipt)
 	employeeListComponentBorder := container.NewBorder(
 		uiUtils.VPadding(50),
 		container.NewVBox(
@@ -80,10 +100,10 @@ func employeeInformatiosComponent() *fyne.Container {
 	)
 } // main component
 
-func showEmployeeInformationsDisabled() *fyne.Container {
+func showEmployeeInformationsDisabled(employee *entity.Employee) *fyne.Container {
 	codLabel := widget.NewLabel("CÓDIGO")
 	codEntry := widget.NewEntry()
-	codEntry.SetText("1")
+	codEntry.SetText(strconv.Itoa(employee.GetId()))
 	codEntry.Disable()
 	codRec := canvas.NewRectangle(color.Transparent)
 	codRec.SetMinSize(fyne.NewSize(50, codEntry.MinSize().Height))
@@ -91,19 +111,19 @@ func showEmployeeInformationsDisabled() *fyne.Container {
 
 	nameLabel := widget.NewLabel("NOME")
 	nameEntry := widget.NewEntry()
-	nameEntry.SetText("Fulano de Tal Pinguelo")
+	nameEntry.SetText(fmt.Sprintf("%s %s", employee.FirstName(), employee.LastName()))
 	nameEntry.Disable()
 	nameRec := canvas.NewRectangle(color.Transparent)
-	nameRec.SetMinSize(fyne.NewSize(300, codEntry.MinSize().Height))
+	nameRec.SetMinSize(fyne.NewSize(300, nameEntry.MinSize().Height))
 	nameStack := container.NewStack(nameRec, nameEntry)
 
-	cnpjLabel := widget.NewLabel("CPF")
-	cnpjEntry := widget.NewEntry()
-	cnpjEntry.SetText("048.511.110-10")
-	cnpjEntry.Disable()
-	cnpjRec := canvas.NewRectangle(color.Transparent)
-	cnpjRec.SetMinSize(fyne.NewSize(150, codEntry.MinSize().Height))
-	cnpjStack := container.NewStack(cnpjRec, cnpjEntry)
+	cpfLabel := widget.NewLabel("CPF")
+	cpfEntry := widget.NewEntry()
+	cpfEntry.SetText(employee.CPF())
+	cpfEntry.Disable()
+	cpfRec := canvas.NewRectangle(color.Transparent)
+	cpfRec.SetMinSize(fyne.NewSize(150, cpfEntry.MinSize().Height))
+	cpfStack := container.NewStack(cpfRec, cpfEntry)
 
 	employeeLeft := container.NewHBox(
 		codLabel,
@@ -121,8 +141,8 @@ func showEmployeeInformationsDisabled() *fyne.Container {
 
 	employeeRight := container.NewHBox(
 		uiUtils.HPadding(10),
-		cnpjLabel,
-		cnpjStack,
+		cpfLabel,
+		cpfStack,
 	)
 
 	return container.NewBorder(
@@ -134,22 +154,22 @@ func showEmployeeInformationsDisabled() *fyne.Container {
 	)
 }
 
-func showEmployeeInformationsEnabled() *fyne.Container {
+func showEmployeeInformationsEnabled(employee *entity.Employee) *fyne.Container {
 	codLabel := widget.NewLabel("CÓDIGO")
-	codValue := widget.NewLabel("1")
+	codValue := widget.NewLabel(strconv.Itoa(employee.GetId()))
 	codRec := newRectangleForEmployeeInformations(utils.NewColor(240, 240, 240, 255), 50, codValue.MinSize().Height)
 	codStack := container.NewStack(codRec, codValue)
 
 	nameLabel := widget.NewLabel("NOME")
-	nameValue := widget.NewLabel("Fulano de Tal Pinguelo")
+	nameValue := widget.NewLabel(fmt.Sprintf("%s %s", employee.FirstName(), employee.LastName()))
 	nameValue.Truncation = fyne.TextTruncateEllipsis
 	nameRec := newRectangleForEmployeeInformations(utils.NewColor(240, 240, 240, 255), 300, nameValue.MinSize().Height)
 	nameStack := container.NewStack(nameRec, nameValue)
 
-	cnpjLabel := widget.NewLabel("CPF")
-	cnpjValue := widget.NewLabel("048.511.110-10")
-	cnpjRec := newRectangleForEmployeeInformations(utils.NewColor(240, 240, 240, 255), 150, cnpjValue.MinSize().Height)
-	cnpjStack := container.NewStack(cnpjRec, cnpjValue)
+	cpfLabel := widget.NewLabel("CPF")
+	cpfValue := widget.NewLabel(employee.CPF())
+	cpfRec := newRectangleForEmployeeInformations(utils.NewColor(240, 240, 240, 255), 150, cpfValue.MinSize().Height)
+	cpfStack := container.NewStack(cpfRec, cpfValue)
 
 	employeeLeft := container.NewHBox(
 		codLabel,
@@ -167,8 +187,8 @@ func showEmployeeInformationsEnabled() *fyne.Container {
 
 	employeeRight := container.NewHBox(
 		uiUtils.HPadding(10),
-		cnpjLabel,
-		cnpjStack,
+		cpfLabel,
+		cpfStack,
 	)
 
 	return container.NewBorder(
@@ -201,26 +221,46 @@ func newRectangleWithDefaultSettings(fillColor color.Color, width float32, heigh
 type receiptRow struct {
 	widget.BaseWidget
 
-	codStack  *fyne.Container
+	receiptID        int
+	codStack         *fyne.Container
 	descriptionStack *fyne.Container
-	actionsStack  *fyne.Container
+	actionsStack     *fyne.Container
+	actionsBar       *fyne.Container
 
-	cod  *widget.Label
+	cod         *widget.Label
 	description *widget.Label
-	actions  []*widget.Button
+	actions     []*widget.Button
 }
 
-func newReceiptRow() *receiptRow {
+type receiptAction struct {
+	icon     fyne.Resource
+	onTapped func(receiptID int)
+}
+
+func newReceiptRow(actionDefinitions []receiptAction) *receiptRow {
 	row := &receiptRow{
-		cod:  widget.NewLabel(""),
+		cod:         widget.NewLabel(""),
 		description: widget.NewLabel(""),
-		actions:  make([]*widget.Button, 0),
+		actions:     make([]*widget.Button, 0, len(actionDefinitions)),
 	}
+	row.actionsBar = container.NewHBox()
+
+	for _, definition := range actionDefinitions {
+		action := definition
+		button := widget.NewButtonWithIcon("", action.icon, func() {
+			action.onTapped(row.receiptID)
+		})
+
+		row.actions = append(row.actions, button)
+		row.actionsBar.Add(button)
+	}
+
+	rowHeight := row.actionsBar.MinSize().Height
 
 	row.codStack = container.NewStack(
 		newRectangleForEmployeesInformations(
 			100,
-			row.cod.MinSize().Height,
+			rowHeight,
 		),
 		row.cod,
 	)
@@ -229,7 +269,7 @@ func newReceiptRow() *receiptRow {
 	descriptionField := container.NewStack(
 		newRectangleForEmployeesInformations(
 			200,
-			row.description.MinSize().Height,
+			rowHeight,
 		),
 		row.description,
 	)
@@ -244,9 +284,9 @@ func newReceiptRow() *receiptRow {
 	row.actionsStack = container.NewStack(
 		newRectangleForEmployeesInformations(
 			150,
-			row.actions.MinSize().Height, //todo: resolve
+			rowHeight,
 		),
-		row.actions,
+		row.actionsBar,
 	)
 
 	row.ExtendBaseWidget(row)
@@ -265,39 +305,20 @@ func (row *receiptRow) CreateRenderer() fyne.WidgetRenderer {
 }
 
 func (row *receiptRow) SetReceipt(receipt *entity.Receipt) {
-	row.cod.SetText(strconv.Itoa(receipt.GetId.GetId()))
-	
-	row.name.SetText(receipt.)
-	row.cpf.SetText(employee.CPF())
+	row.receiptID = receipt.GetId()
+	row.cod.SetText(strconv.Itoa(row.receiptID))
+	row.description.SetText(receipt.GetSumaryDescription())
 }
 
-func NewEmployeeListComponent() fyne.CanvasObject {
-	f1, _ := entity.LoadEmployee(1, 1, "Jose", "PingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPingueloPinguelo", "04851111010")
-	f2, _ := entity.LoadEmployee(2, 1, "Maria", "Pinguelo", "04851111010")
-	f3, _ := entity.LoadEmployee(3, 1, "leo", "Pinguelo", "04851111010")
-	f4, _ := entity.LoadEmployee(4, 1, "John", "Pinguelo", "04851111010")
-	f5, _ := entity.LoadEmployee(4, 1, "John", "Pinguelo", "04851111010")
-	f6, _ := entity.LoadEmployee(4, 1, "John", "Pinguelo", "04851111010")
-	f7, _ := entity.LoadEmployee(4, 1, "John", "Pinguelo", "04851111010")
-	f8, _ := entity.LoadEmployee(4, 1, "John", "Pinguelo", "04851111010")
-	f9, _ := entity.LoadEmployee(4, 1, "John", "Pinguelo", "04851111010")
-	fA, _ := entity.LoadEmployee(4, 1, "John", "Pinguelo", "04851111010")
-	fB, _ := entity.LoadEmployee(4, 1, "John", "Pinguelo", "04851111010")
-	fC, _ := entity.LoadEmployee(4, 1, "John", "Pinguelo", "04851111010")
-	employees := []*entity.Employee{
-		f1, f2, f3, f4, f5, f6, f7, f8,
-		f9,
-		fA,
-		fB,
-		fC,
-	}
+type ReceiptFinder interface {
+	Execute(qry receiptQuery.GetReceiptWithFilter) ([]*entity.Receipt, error)
+}
 
-	employeeList := newEmployeesList(employees, func(employeeID int) {
-		fmt.Println(employees[employeeID]) //pra esse teste ta ruim pq estamos tratando do array, porém na vida real isso aqui vai virar um consulta no banco de dados
-	})
+func NewReceiptListComponent(finder ReceiptFinder, onViewReceipt, onEditReceipt, OnDeleteReceipt func(receiptID int)) fyne.CanvasObject {
+	receiptList := newReceiptList(finder, receiptQuery.GetReceiptWithFilter{}, onViewReceipt, onEditReceipt, OnDeleteReceipt)
 
-	rowHeight := employeeList.MinSize().Height
-	employeeCount := employeeList.Length()
+	rowHeight := receiptList.MinSize().Height
+	employeeCount := receiptList.Length()
 
 	listHeight := rowHeight * float32(employeeCount)
 
@@ -310,7 +331,7 @@ func NewEmployeeListComponent() fyne.CanvasObject {
 		listHeight = employeeListMaxHeight
 	}
 
-	employeesPanel := newEmployeesPanel(employeeList)
+	employeesPanel := newReceiptPanel(receiptList)
 	panelHeight := listHeight + 60
 
 	panelHeightSpacer := canvas.NewRectangle(color.Transparent)
@@ -322,24 +343,64 @@ func NewEmployeeListComponent() fyne.CanvasObject {
 	)
 }
 
-func newEmployeesPanel(employeeList *widget.List) fyne.CanvasObject {
+func newReceiptList(finder ReceiptFinder, filter receiptQuery.GetReceiptWithFilter, onView, onEdit, onDelete func(receiptID int)) *widget.List {
+	receipts, err := finder.Execute(filter)
+
+	if err != nil {
+		//todo: handle this later, maybe an err popup/dialog
+	}
+	if len(receipts) == 0 {
+		//todo: this is not an error, but its prefearable to display a empty message
+	}
+	receiptList := widget.NewList(
+		func() int {
+			return len(receipts)
+		},
+		func() fyne.CanvasObject {
+			return newReceiptRow([]receiptAction{
+				{
+					icon:     assets.BinocularsIcon,
+					onTapped: onView,
+				},
+				{
+					icon:     assets.EditIcon,
+					onTapped: onEdit,
+				},
+				{
+					icon:     assets.DeleteDocumentIcon,
+					onTapped: onDelete,
+				},
+			})
+		},
+		func(id widget.ListItemID, object fyne.CanvasObject) {
+			eRow := object.(*receiptRow)
+			eRow.SetReceipt(receipts[id])
+		},
+	)
+	receiptList.OnSelected = func(id widget.ListItemID) { // prevent default
+		receiptList.Unselect(id)
+	}
+	return receiptList
+}
+
+func newReceiptPanel(receiptList *widget.List) fyne.CanvasObject {
 	headerCod := container.NewHBox(
 		uiUtils.HPadding(20),
-		newEmployeeHeaderCell("CÓDIGO", 100),
+		newReceiptHeaderCell("CÓDIGO", 100),
 	)
-	headerName := container.NewHBox(
+	headerDescription := container.NewHBox(
 		uiUtils.HPadding(150),
-		newEmployeeHeaderCell("DESCRIÇÃO", 200),
+		newReceiptHeaderCell("DESCRIÇÃO", 200),
 	)
-	headerCpf := container.NewHBox(
-		newEmployeeHeaderCell("AÇÕES", 150),
+	headerActions := container.NewHBox(
+		newReceiptHeaderCell("AÇÕES", 150),
 	)
 	header := container.NewBorder(
 		nil,
 		nil,
 		headerCod,
-		headerCpf,
-		headerName,
+		headerActions,
+		headerDescription,
 	)
 
 	topSpacer := canvas.NewRectangle(color.Transparent)
@@ -351,7 +412,7 @@ func newEmployeesPanel(employeeList *widget.List) fyne.CanvasObject {
 			nil,
 			nil,
 			nil,
-			employeeList,
+			receiptList,
 		),
 	)
 
@@ -380,33 +441,11 @@ func newEmployeesPanel(employeeList *widget.List) fyne.CanvasObject {
 	return container.NewStack(frame, content, legendLayer)
 }
 
-func newEmployeeHeaderCell(text string, width float32) fyne.CanvasObject {
+func newReceiptHeaderCell(text string, width float32) fyne.CanvasObject {
 	label := widget.NewLabel(text)
 
 	background := canvas.NewRectangle(color.Transparent)
 	background.SetMinSize(fyne.NewSize(width, label.MinSize().Height))
 
 	return container.NewStack(background, label)
-}
-
-func newEmployeesList(employees []*entity.Employee, onEmployeeSelected func(employeeID int)) *widget.List {
-	employeesList := widget.NewList(
-		func() int {
-			return len(employees)
-		},
-		func() fyne.CanvasObject {
-			return newEmployeeRow()
-		},
-		func(id widget.ListItemID, object fyne.CanvasObject) {
-			eRow := object.(*employeeRow)
-			eRow.SetEmployee(employees[id])
-		},
-	)
-	employeesList.OnSelected = func(id widget.ListItemID) {
-		employeesList.Unselect(id)
-		if onEmployeeSelected != nil {
-			onEmployeeSelected(employees[id].GetId())
-		}
-	}
-	return employeesList
 }
