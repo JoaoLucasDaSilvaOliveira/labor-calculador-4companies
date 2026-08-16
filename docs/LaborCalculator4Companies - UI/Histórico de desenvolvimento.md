@@ -41,3 +41,9 @@ No momento eu ja passei tudo, ou quase tudo, para usecase e query de verdade. Ag
 O codex criou um widget personalizado para servir de campo clicavel e ja colocou na função showCompanyInformations(), o que é ótimo. Agora é preciso salvar newInlineEditableCompanyField em vars pra os botões Gravar e Cancelar poderem manipula-las. Precisa criar o botão cancelar tb.==
 
 **Próximo passo:** Componentizar os elementos repetidos/semelhantes das telas 1.1 e 1.2.
+
+# Passo 9:
+Consolidado o desenho para integrar as telas 1.1 (empresa) e 1.2 (funcionário): a mainpage terá um router interno persistente no conteúdo central, enquanto o router externo continuará responsável apenas pelas telas de agregação. O workspace inicia e faz fallback em Acesso rápido, preserva o histórico `acesso rápido → empresa → funcionário` e recebe rotas nomeadas pelo padrão `<local>.<ação>`. A decisão está registrada em [[0001-roteadores-externo-e-interno-na-mainpage]].
+
+As telas manterão composições próprias e usarão somente componentes visuais pequenos e reutilizáveis. Nesta integração, dados serão somente leitura; navegação interna, filtros por vínculo e estados de lista vazia serão funcionais. Falhas reais de consulta terão estado recuperável com retorno pelo histórico; validações de formulário permanecem próximas aos campos.
+**Próximo passo:** implementar a integração do workspace e das telas 1.1/1.2; em seguida, retomar o fluxo de edição inline (`GRAVAR`/`CANCELAR`/validações) e a criação de novo recibo.

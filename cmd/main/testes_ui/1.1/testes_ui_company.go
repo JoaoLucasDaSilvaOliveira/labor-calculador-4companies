@@ -93,13 +93,16 @@ func companyInformationsComponent(companyFinder CompanyFinderById, companyFinder
 
 func showCompanyInformations(company *entity.Company) (*fyne.Container, *widget.Button) {
 	codLabel := widget.NewLabel("CÓDIGO")
-	codStack := container.NewStack(newInlineEditableCompanyField(strconv.Itoa(company.GetId()), 50))
+	codField := newInlineEditableCompanyField(strconv.Itoa(company.GetId()), 50)
+	codStack := container.NewStack(codField)
 
 	nameLabel := widget.NewLabel("NOME")
-	nameStack := container.NewStack(newInlineEditableCompanyField(company.Name(), 300))
+	nameField := newInlineEditableCompanyField(company.Name(), 300)
+	nameStack := container.NewStack(nameField)
 
 	cnpjLabel := widget.NewLabel("CNPJ")
-	cnpjStack := container.NewStack(newInlineEditableCompanyField(company.CNPJ(), 150))
+	cnpjField := newInlineEditableCompanyField(company.CNPJ(), 150)
+	cnpjStack := container.NewStack(cnpjField)
 
 	companyLeft := container.NewHBox(
 		codLabel,
