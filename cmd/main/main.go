@@ -6,6 +6,8 @@ import (
 	"os"
 
 	companyUC "labor-calculador-4companies/internal/application/usecase/company"
+	employeeUC "labor-calculador-4companies/internal/application/usecase/employee"
+	receiptUC "labor-calculador-4companies/internal/application/usecase/receipt"
 	"labor-calculador-4companies/internal/infra/config"
 	"labor-calculador-4companies/internal/infra/persistence/sqlite"
 	uiApplication "labor-calculador-4companies/internal/ui/application"
@@ -15,7 +17,7 @@ import (
 )
 
 func loadEnv() {
-	if err := godotenv.Load(); err != nil && !errors.Is(err, os.ErrNotExist) {
+	if err := godotenv.Load("/home/dev_jao/personal-projects/labor-calculador-4companies/.env"); err != nil && !errors.Is(err, os.ErrNotExist) {
 		log.Fatalf("erro ao carregar .env: %v", err)
 	}
 }
@@ -37,17 +39,38 @@ func main() {
 
 	// REPOSITORIES AND USE CASES
 	companyRepository := sqlite.NewCompanyRepository(database)
+	employeeRepository := sqlite.NewEmployeeRepository(database)
+	receiptRepository := sqlite.NewReceiptRepository(database)
+
 	getCompaniesUseCase := companyUC.NewGetCompanyUsecase(companyRepository)
+	getCompanyByIDUseCase := companyUC.NewGetCompanyByIdUsecase(companyRepository)
+	getEmployeesUseCase := employeeUC.NewGetEmployeeUsecase(employeeRepository)
+	getEmployeeByIDUseCase := employeeUC.NewGetEmployeeByIdUsecase(employeeRepository)
+	getReceiptsUseCase := receiptUC.NewGetReceiptUsecase(receiptRepository)
 
-	// UI APPLICATION, ROUTER AND PAGE PROVIDER
+	// UI APPLICATION, ROUTERS AND PAGE PROVIDER
 	application := uiApplication.NewApplication()
-	router := navigation.NewRouter(navigation.RouteMain)
-	routeProvider := newUIRouteProvider(getCompaniesUseCase, router)
+	workspaceRouter := navigation.NewRouter(navigation.RouteQuickAccess)
+	routeProvider := newUIRouteProvider(uiRouteProviderDeps{
+		GetCompanies:    getCompaniesUseCase,
+		GetCompanyByID:  getCompanyByIDUseCase,
+		GetEmployees:    getEmployeesUseCase,
+		GetEmployeeByID: getEmployeeByIDUseCase,
+		GetReceipts:     getReceiptsUseCase,
+	})
 
-	if err := routeProvider.Register(router); err != nil {
-		log.Fatalf("erro ao registrar as rotas da interface: %v", err)
+	if err := routeProvider.RegisterWorkspace(workspaceRouter); err != nil {
+		log.Fatalf("erro ao registrar as rotas do workspace: %v", err)
+	}
+	if err := workspaceRouter.Replace(navigation.RouteQuickAccess, nil); err != nil {
+		log.Fatalf("erro ao abrir o acesso rápido: %v", err)
+	}
+
+	rootRouter := navigation.NewRouter(navigation.RouteMain)
+	if err := routeProvider.RegisterRoot(rootRouter, workspaceRouter); err != nil {
+		log.Fatalf("erro ao registrar as rotas externas: %v", err)
 	}
 
 	// DESKTOP EVENT LOOP
-	application.Run(router.View())
+	application.Run(rootRouter.View())
 }

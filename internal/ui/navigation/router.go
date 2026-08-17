@@ -25,6 +25,7 @@ type PageFactory func(params any) (fyne.CanvasObject, error)
 type Navigator interface {
 	Push(route RouteID, params any) error
 	Replace(route RouteID, params any) error
+	Reset(route RouteID, params any) error
 	Back() bool
 	CanGoBack() bool
 	Current() RouteID
@@ -129,17 +130,23 @@ func (r *Router) Current() RouteID {
 }
 
 func (r *Router) Reset(route RouteID, params any) error {
-	auxHistory := r.history
-	//points to a new slice with no items
-	r.history = make([]historyEntry, 0)
+	entry, err := r.buildEntry(route, params)
+	if err == nil {
+		r.history = []historyEntry{entry}
+		r.show(entry)
+		return nil
+	}
 
-	if err := r.Replace(route, params); err != nil {
-		//garantees that if an error occurs, the history is restored
-		r.history = append(auxHistory, r.history...)
+	// Reset starts a new navigation session. If its destination cannot be
+	// built, the previous session must not be restored behind the fallback.
+	fallbackEntry, fallbackErr := r.buildEntry(r.fallbackRoute, nil)
+	if fallbackErr == nil {
+		r.history = []historyEntry{fallbackEntry}
+		r.show(fallbackEntry)
 		return err
 	}
 
-	return nil
+	return errors.Join(err, fmt.Errorf("não foi possível abrir a rota fallback: %w", fallbackErr))
 }
 
 func (r *Router) buildEntry(route RouteID, params any) (historyEntry, error) {

@@ -1,54 +1,117 @@
 package components
 
 import (
-	command "labor-calculador-4companies/internal/application/command/company"
-	"labor-calculador-4companies/internal/domain/entity"
-	error_factory "labor-calculador-4companies/internal/domain/error"
+	"image/color"
 	"strconv"
 
+	"labor-calculador-4companies/internal/domain/entity"
+	uiUtils "labor-calculador-4companies/internal/ui/utils"
+
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
 
-var (
-	ErrCompanyNotFound = error_factory.NewError("Empresa não encontrada")
-)
-
-type CompanyDetails interface {
-	Execute(cmd command.GetCompanyById) (*entity.Company, error)
-}
-
-func CompanyDetailsComponent() {}
-
-func newCompanyDetails(finder CompanyDetails, cmd command.GetCompanyById) fyne.CanvasObject {
-	company, err := finder.Execute(cmd)
-
-	if err != nil {
-		return widget.NewLabel(ErrCompanyNotFound.Error())
-	}
-
-	return companyDetailsContainer(company)
-}
-
-func companyDetailsContainer(company *entity.Company) fyne.CanvasObject {
+// NewCompanyDetailsComponent preserves the prototype composition of the
+// company information row while keeping the editable fields reusable.
+func NewCompanyDetailsComponent(company *entity.Company) fyne.CanvasObject {
 	codLabel := widget.NewLabel("CÓDIGO")
-	codEntry := widget.NewEntry()
-	codEntry.SetText(strconv.Itoa(company.GetId()))
+	codStack := container.NewStack(NewInlineEditableField(strconv.Itoa(company.GetId()), 50))
 
 	nameLabel := widget.NewLabel("NOME")
-	nameEntry := widget.NewEntry()
-	nameEntry.SetText(company.Name())
+	nameStack := container.NewStack(NewInlineEditableField(company.Name(), 300))
 
 	cnpjLabel := widget.NewLabel("CNPJ")
-	cnpjEntry := widget.NewEntry()
-	cnpjEntry.SetText(company.CNPJ())
+	cnpjStack := container.NewStack(NewInlineEditableField(company.CNPJ(), 150))
 
-	hbox := container.NewHBox(
-		codLabel, codEntry,
-		nameLabel, nameEntry,
-		cnpjLabel, cnpjEntry,
+	companyLeft := container.NewHBox(
+		codLabel,
+		codStack,
+		uiUtils.HPadding(10),
 	)
 
-	return hbox
+	companyName := container.NewBorder(
+		nil,
+		nil,
+		nameLabel,
+		nil,
+		nameStack,
+	)
+
+	companyRight := container.NewHBox(
+		uiUtils.HPadding(10),
+		cnpjLabel,
+		cnpjStack,
+	)
+
+	return container.NewBorder(
+		widget.NewLabelWithStyle("", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}),
+		nil,
+		companyLeft,
+		companyRight,
+		companyName,
+	)
+}
+
+// InlineEditableField is the clickable field used by the company prototype.
+// Persistence is intentionally left to the future save flow.
+type InlineEditableField struct {
+	widget.BaseWidget
+
+	value   *widget.Label
+	entry   *widget.Entry
+	content *fyne.Container
+}
+
+func NewInlineEditableField(text string, width float32) *InlineEditableField {
+	field := &InlineEditableField{
+		value: widget.NewLabel(text),
+		entry: widget.NewEntry(),
+	}
+	field.value.Truncation = fyne.TextTruncateEllipsis
+	field.entry.SetText(text)
+	field.entry.Hide()
+
+	background := newRoundedInformationRectangle(
+		color.NRGBA{R: 240, G: 240, B: 240, A: 255},
+		width,
+		field.entry.MinSize().Height,
+	)
+	field.content = container.NewStack(background, field.value, field.entry)
+	field.ExtendBaseWidget(field)
+	return field
+}
+
+func (field *InlineEditableField) CreateRenderer() fyne.WidgetRenderer {
+	return widget.NewSimpleRenderer(field.content)
+}
+
+func (field *InlineEditableField) Tapped(*fyne.PointEvent) {
+	if field.entry.Visible() {
+		return
+	}
+
+	field.value.Hide()
+	field.entry.Show()
+	if app := fyne.CurrentApp(); app != nil {
+		if canvas := app.Driver().CanvasForObject(field.entry); canvas != nil {
+			canvas.Focus(field.entry)
+		}
+	}
+}
+
+func newRoundedInformationRectangle(fillColor color.Color, width, height float32) *canvas.Rectangle {
+	rectangle := canvas.NewRectangle(fillColor)
+	rectangle.SetMinSize(fyne.NewSize(width, height))
+	rectangle.CornerRadius = 5
+	rectangle.StrokeColor = color.Black
+	rectangle.StrokeWidth = 0.5
+	return rectangle
+}
+
+func newTransparentInformationRectangle(width, height float32) *canvas.Rectangle {
+	rectangle := canvas.NewRectangle(color.Transparent)
+	rectangle.SetMinSize(fyne.NewSize(width, height))
+	return rectangle
 }

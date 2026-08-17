@@ -8,7 +8,6 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
-	"fyne.io/fyne/v2/widget"
 )
 
 const mainPageOpenedSplitOffset = 0.3
@@ -23,8 +22,9 @@ const (
 
 // MainPageDeps lists the external capabilities required by the mainpage.
 type MainPageDeps struct {
-	Companies components.CompanyFinder
-	Navigator navigation.Navigator
+	Companies     components.CompanyFinder
+	Navigator     navigation.Navigator
+	WorkspaceView fyne.CanvasObject
 }
 
 // mainPage owns only the presentation state local to the mainpage.
@@ -58,37 +58,11 @@ func (p *mainPage) build() fyne.CanvasObject {
 	p.sidebarContent = components.NewAnimatedContent()
 	p.sidebarHost = p.sidebarContent.View()
 
-	p.split = container.NewHSplit(p.sidebarHost, p.buildQuickAccess()) // AQUI ENTRA O WORKSPACE
+	p.split = container.NewHSplit(p.sidebarHost, p.deps.WorkspaceView)
 	p.split.SetOffset(mainPageOpenedSplitOffset)
 
 	p.renderSidebar()
 	return p.split
-}
-
-func (p *mainPage) buildQuickAccess() fyne.CanvasObject {
-	title := widget.NewLabel("ACESSO RÁPIDO")
-	title.TextStyle.Bold = true
-
-	defaultColor := theme.Color(theme.ColorNameForeground)
-	hoverColor := theme.Color(theme.ColorNamePrimary)
-	addCompany := components.NewClickableText(
-		"+ CADASTRAR EMPRESA",
-		defaultColor,
-		hoverColor,
-		p.openCompanyRegistration,
-	)
-	newCalculation := components.NewClickableText(
-		"+ NOVO CÁLCULO",
-		defaultColor,
-		hoverColor,
-		p.openCalculationCreation,
-	)
-
-	return container.NewCenter(container.NewVBox(
-		title,
-		addCompany,
-		newCalculation,
-	))
 }
 
 func (p *mainPage) sidebarDeps() components.MainPageSidebarDeps {
@@ -259,10 +233,12 @@ func (p *mainPage) minimumOffset(view fyne.CanvasObject) float64 {
 }
 
 func (p *mainPage) openCompanyDetails(companyID int) {
-	p.navigate(
+	if err := p.deps.Navigator.Reset(
 		navigation.RouteCompanyDetails,
 		navigation.CompanyDetailsParams{CompanyID: companyID},
-	)
+	); err != nil {
+		fyne.LogError("Não foi possível abrir a empresa selecionada.", err)
+	}
 }
 
 func (p *mainPage) openCompanyRegistration() {

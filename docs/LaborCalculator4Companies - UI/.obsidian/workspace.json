@@ -13,15 +13,30 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "CONTEXT.md",
+                "file": "Histórico de desenvolvimento.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "CONTEXT"
+              "title": "Histórico de desenvolvimento"
+            }
+          },
+          {
+            "id": "758a984bb2170ad4",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Histórico de desenvolvimento.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Histórico de desenvolvimento"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -185,14 +200,16 @@
       "daily-notes:Abrir a nota de hoje": false,
       "templates:Inserir modelo": false,
       "command-palette:Abrir paleta de comandos": false,
-      "bases:Criar nova base": false
+      "bases:Criar nova base": false,
+      "obsidian-excalidraw-plugin:New drawing": false
     }
   },
-  "active": "5f0f756b33e2e3b8",
+  "active": "758a984bb2170ad4",
   "lastOpenFiles": [
+    "excalidraw-sketch.excalidraw.md",
+    "Histórico de desenvolvimento.md",
     "ADR/0001-roteadores-externo-e-interno-na-mainpage.md",
     "CONTEXT.md",
-    "ADR",
-    "Histórico de desenvolvimento.md"
+    "ADR"
   ]
 }

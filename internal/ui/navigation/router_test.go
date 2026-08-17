@@ -2,8 +2,6 @@ package navigation
 
 import (
 	"errors"
-	"fmt"
-	"slices"
 	"testing"
 	"time"
 
@@ -150,18 +148,21 @@ func TestRouterResetClearsHistory(t *testing.T) {
 		{route: routeTestDetails, params: nil, view: nil},
 	}
 
-	fmt.Printf("Antes do reset: %v", router.history)
-
 	if err := router.Reset(RouteMain, nil); err != nil {
 		t.Fatalf("Reset(RouteMain) returned an error: %v", err)
 	}
-	fmt.Printf("Depois do reset: %v", router.history)
 
 	if got := len(router.history); got != 1 {
 		t.Fatalf("history length after Reset = %d, want 1", got)
 	}
 	if got := router.Current(); got != RouteMain {
 		t.Fatalf("Current() after Reset = %q, want %q", got, RouteMain)
+	}
+	if router.CanGoBack() {
+		t.Fatal("CanGoBack() after Reset = true, want false")
+	}
+	if router.Back() {
+		t.Fatal("Back() after Reset = true, want false")
 	}
 }
 
@@ -175,37 +176,17 @@ func TestRouterResetWithNoRegisteredRoute(t *testing.T) {
 		{route: routeTestDetails, params: nil, view: nil},
 	}
 
-	fmt.Printf("Antes do reset: %v\n\n", router.history)
-
 	err := router.Reset(RouteCalculationCreate, nil)
 	if err == nil { //non registered
 		t.Fatalf("Reset with a non registered route didn't returned an error")
 	}
-	fmt.Println(err)
-	//in this case the history needs to be restored an putted the fallback in the history
-	// EXPECTED: [main, test.details, main] -> len = 3
-	expected := []historyEntry{
-		{route: RouteMain, params: nil, view: nil},
-		{route: routeTestDetails, params: nil, view: nil},
-		{route: RouteMain, params: nil, view: nil},
-	}
 
-	if got := len(router.history); got != 3 {
-		t.Fatalf("history length after Reset = %d, want 3", got)
+	if got := len(router.history); got != 1 {
+		t.Fatalf("history length after Reset = %d, want 1", got)
 	}
 	if got := router.Current(); got != RouteMain {
 		t.Fatalf("Current() after Reset = %q, want %q", got, RouteMain)
 	}
-	if equal := slices.EqualFunc(
-		router.history,
-		expected,
-		func(r, ex historyEntry) bool {
-			return r.route == ex.route
-		},
-	); equal == false {
-		t.Fatalf("Hitory received is diferent from the expected after Reset.\nGot: %q, want %q", router.history, expected)
-	}
-	fmt.Printf("Depois do reset: %v\n\n", router.history)
 }
 
 func newTestRouter(t *testing.T) *Router {

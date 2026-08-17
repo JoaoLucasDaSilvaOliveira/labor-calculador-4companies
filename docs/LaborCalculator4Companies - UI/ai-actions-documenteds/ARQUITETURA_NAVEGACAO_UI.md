@@ -10,6 +10,32 @@ O objetivo é permitir que a solução seja:
 - Evoluída sem concentrar responsabilidades na homepage.
 - Testada sem abrir uma janela gráfica real.
 
+## Estado vigente
+
+As seções que mencionam `HomePage`, `RouteHome` ou os primeiros placeholders
+descrevem etapas históricas da refatoração. O código vigente usa `MainPage` e
+`RouteMain`.
+
+Atualmente a composição é:
+
+```text
+RootRouter
+└── MainPage
+    ├── Sidebar persistente
+    └── WorkspaceRouter.View()
+        ├── QuickAccessPage
+        ├── CompanyPage
+        └── EmployeePage
+```
+
+As telas de empresa e funcionário são somente leitura nesta etapa. Elas
+consultam os use cases reais, filtram funcionários por empresa e recibos por
+funcionário e distinguem carregamento, estado vazio e erro recuperável. A
+composição visual segue os protótipos de `cmd/main/testes_ui/1.1` e
+`cmd/main/testes_ui/1.2`, incluindo os painéis customizados, dimensões e ações
+de rodapé. A edição inline está visualmente preparada, mas ainda não persiste
+alterações.
+
 ## Sumário
 
 1. [Problema original](#1-problema-original)
@@ -1305,7 +1331,7 @@ eventos de teclado, mouse, desenho e animações até a aplicação terminar.
 
 Foram criados destinos iniciais para confirmar a navegação.
 
-### Página de empresa
+### Página de empresa — Tela 1.1
 
 ```text
 internal/ui/pages/company.go
@@ -1316,14 +1342,26 @@ Dependências:
 ```go
 type CompanyPageDeps struct {
     CompanyID int
+    Company   CompanyFinderByID
+    Employees EmployeeFinder
     Navigator navigation.Navigator
 }
 ```
 
-Ela mostra o ID recebido e um botão de voltar.
+Ela consulta a empresa por ID e os funcionários por `CompanyID`. A seleção de
+um funcionário navega para a Tela 1.2 usando `Push`. Falhas de consulta são
+apresentadas dentro da própria rota com retorno pelo histórico interno.
 
-A página ainda não carrega os detalhes reais. Quando isso for implementado,
-deve receber o use case necessário em `CompanyPageDeps`.
+### Página de funcionário — Tela 1.2
+
+```text
+internal/ui/pages/employee.go
+```
+
+A página consulta o funcionário por ID e seus recibos por `EmployeeID`. A lista
+de recibos possui estado vazio próprio; falhas de consulta são apresentadas
+como erro recuperável. Edição, exclusão e criação de recibos permanecem fora
+do incremento atual.
 
 ### Cadastro de empresa
 
