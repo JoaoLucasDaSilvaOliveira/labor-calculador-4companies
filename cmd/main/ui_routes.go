@@ -8,6 +8,7 @@ import (
 	employeeUC "labor-calculador-4companies/internal/application/usecase/employee"
 	receiptUC "labor-calculador-4companies/internal/application/usecase/receipt"
 	error_factory "labor-calculador-4companies/internal/domain/error"
+	"labor-calculador-4companies/internal/ui/components"
 	"labor-calculador-4companies/internal/ui/navigation"
 	"labor-calculador-4companies/internal/ui/pages"
 
@@ -17,11 +18,16 @@ import (
 var ErrOnOpenMain = error_factory.NewError("erro ao abrir a página inicial")
 
 type uiRouteProviderDeps struct {
-	GetCompanies    *companyUC.GetCompanyUsecase
-	GetCompanyByID  *companyUC.GetCompanyByIdUsecase
-	GetEmployees    *employeeUC.GetEmployeeUsecase
-	GetEmployeeByID *employeeUC.GetEmployeeByIdUsecase
-	GetReceipts     *receiptUC.GetReceiptUsecase
+	GetCompanies      *companyUC.GetCompanyUsecase
+	GetCompanyByID    *companyUC.GetCompanyByIdUsecase
+	UpdateCompany     *companyUC.UpdateCompanyUsecase
+	GetEmployees      *employeeUC.GetEmployeeUsecase
+	GetEmployeeByID   *employeeUC.GetEmployeeByIdUsecase
+	UpdateEmployee    *employeeUC.UpdateEmployeeUsecase
+	GetReceipts       *receiptUC.GetReceiptUsecase
+	Window            fyne.Window
+	EditSession       *navigation.EditSession
+	CompanyListReload *components.CompanyListReloadHandle
 }
 
 // uiRouteProvider adapts application routes to page constructors. It receives
@@ -38,6 +44,10 @@ func newUIRouteProvider(deps uiRouteProviderDeps) *uiRouteProvider {
 
 func (p *uiRouteProvider) RegisterWorkspace(router *navigation.Router) error {
 	p.workspaceNavigator = router
+	router.SetNavigationGuard(&navigation.UnsavedChangesGuard{
+		Session: p.deps.EditSession,
+		Parent:  p.deps.Window,
+	})
 
 	registrations := []struct {
 		route   navigation.RouteID
@@ -75,9 +85,10 @@ func (p *uiRouteProvider) RegisterRoot(router *navigation.Router, workspaceRoute
 
 func (p *uiRouteProvider) mainPage(_ any) (fyne.CanvasObject, error) {
 	return pages.NewMainPage(pages.MainPageDeps{
-		Companies:     p.deps.GetCompanies,
-		Navigator:     p.workspaceNavigator,
-		WorkspaceView: p.workspaceView,
+		Companies:         p.deps.GetCompanies,
+		CompanyListReload: p.deps.CompanyListReload,
+		Navigator:         p.workspaceNavigator,
+		WorkspaceView:     p.workspaceView,
 	}), nil
 }
 
@@ -98,7 +109,14 @@ func (p *uiRouteProvider) companyPage(params any) (fyne.CanvasObject, error) {
 		CompanyID: companyParams.CompanyID,
 		Company:   p.deps.GetCompanyByID,
 		Employees: p.deps.GetEmployees,
+		Updater:   p.deps.UpdateCompany,
 		Navigator: p.workspaceNavigator,
+		Edit:      p.deps.EditSession,
+		ReloadSidebar: func() {
+			if p.deps.CompanyListReload != nil {
+				p.deps.CompanyListReload.Reload()
+			}
+		},
 	}), nil
 }
 
@@ -114,11 +132,13 @@ func (p *uiRouteProvider) employeePage(params any) (fyne.CanvasObject, error) {
 	companyName := strings.ToUpper(employeeParams.CompanyName)
 
 	return pages.NewEmployeePage(pages.EmployeePageDeps{
-		EmployeeID: employeeParams.EmployeeID,
-		Employee:   p.deps.GetEmployeeByID,
-		Receipts:   p.deps.GetReceipts,
-		Navigator:  p.workspaceNavigator,
+		EmployeeID:  employeeParams.EmployeeID,
+		Employee:    p.deps.GetEmployeeByID,
+		Receipts:    p.deps.GetReceipts,
+		Updater:     p.deps.UpdateEmployee,
+		Navigator:   p.workspaceNavigator,
 		CompanyName: companyName,
+		Edit:        p.deps.EditSession,
 	}), nil
 }
 

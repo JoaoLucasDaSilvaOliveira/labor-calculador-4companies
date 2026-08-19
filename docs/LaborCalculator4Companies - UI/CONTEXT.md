@@ -53,3 +53,30 @@ _Evitar_: estado vazio
 O feedback sobre um valor inválido ou obrigatório em um formulário. É exibido
 no contexto do campo correspondente e não altera a navegação atual.
 _Evitar_: erro recuperável de tela, pop-up de erro
+
+## Edição e persistência
+
+**Sessão de edição**:
+O estado de alteração pendente da tela atual. Clicar em um campo inicia o modo
+`Entry` para todos os campos de negócio editáveis, mas a sessão só é ativada
+quando algum valor diverge do snapshot original.
+
+**Campo editável inline**:
+Um campo que alterna entre label de visualização e `Entry`, preservando um
+snapshot do valor original para cancelamento. Códigos identificadores não
+fazem parte dos campos editáveis de empresa ou funcionário.
+
+**Alteração não salva**:
+Um valor de campo que diverge do snapshot original. `GRAVAR` e `CANCELAR`
+ficam habilitados somente nesse estado; retornar ao valor original encerra a
+alteração pendente e não bloqueia a navegação.
+
+**Guarda de navegação**:
+O mecanismo do router interno que apresenta o diálogo de alterações não
+salvas. `Voltar à edição` preserva os valores; `Continuar` executa o
+cancelamento da sessão antes de navegar.
+
+**Reload da lista de empresas**:
+Após a persistência de uma empresa, o componente de lista atualmente montado
+na sidebar repete a consulta em uma goroutine e aplica o resultado na UI
+thread, mantendo o nome atualizado sem reconstruir a MainPage.

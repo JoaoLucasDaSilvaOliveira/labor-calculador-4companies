@@ -1,7 +1,6 @@
 package components
 
 import (
-	"fmt"
 	"image/color"
 	"strconv"
 
@@ -13,9 +12,17 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-// NewEmployeeDetailsComponent preserves the enabled/read-only employee
-// information composition from the prototype.
-func NewEmployeeDetailsComponent(employee *entity.Employee, companyName string) fyne.CanvasObject {
+// EmployeeDetailsComponent keeps employee presentation separate from the
+// company screen while exposing explicit first-name and last-name fields.
+type EmployeeDetailsComponent struct {
+	View           fyne.CanvasObject
+	FirstNameField *InlineEditableField
+	LastNameField  *InlineEditableField
+	CPFField       *InlineEditableField
+	fields         []*InlineEditableField
+}
+
+func NewEmployeeDetailsComponent(employee *entity.Employee, companyName string) *EmployeeDetailsComponent {
 	cpNameLabel := widget.NewLabelWithStyle(companyName, fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	codLabel := widget.NewLabel("CÓDIGO")
 	codValue := widget.NewLabel(strconv.Itoa(employee.GetId()))
@@ -24,20 +31,17 @@ func NewEmployeeDetailsComponent(employee *entity.Employee, companyName string) 
 		codValue,
 	)
 
-	nameLabel := widget.NewLabel("NOME")
-	nameValue := widget.NewLabel(fmt.Sprintf("%s %s", employee.FirstName(), employee.LastName()))
-	nameValue.Truncation = fyne.TextTruncateEllipsis
-	nameStack := container.NewStack(
-		newRoundedInformationRectangle(color.NRGBA{R: 240, G: 240, B: 240, A: 255}, 300, nameValue.MinSize().Height),
-		nameValue,
-	)
+	firstNameLabel := widget.NewLabel("NOME")
+	firstNameField := NewInlineEditableField(employee.FirstName(), 140)
+	firstNameStack := container.NewStack(firstNameField)
+
+	lastNameLabel := widget.NewLabel("SOBRENOME")
+	lastNameField := NewInlineEditableField(employee.LastName(), 140)
+	lastNameStack := container.NewStack(lastNameField)
 
 	cpfLabel := widget.NewLabel("CPF")
-	cpfValue := widget.NewLabel(employee.CPF())
-	cpfStack := container.NewStack(
-		newRoundedInformationRectangle(color.NRGBA{R: 240, G: 240, B: 240, A: 255}, 150, cpfValue.MinSize().Height),
-		cpfValue,
-	)
+	cpfField := NewInlineEditableField(employee.CPF(), 150)
+	cpfStack := container.NewStack(cpfField)
 
 	employeeLeft := container.NewHBox(
 		codLabel,
@@ -45,12 +49,10 @@ func NewEmployeeDetailsComponent(employee *entity.Employee, companyName string) 
 		uiUtils.HPadding(10),
 	)
 
-	employeeName := container.NewBorder(
-		nil,
-		nil,
-		nameLabel,
-		nil,
-		nameStack,
+	employeeName := container.NewHBox(
+		container.NewBorder(nil, nil, firstNameLabel, nil, firstNameStack),
+		uiUtils.HPadding(8),
+		container.NewBorder(nil, nil, lastNameLabel, nil, lastNameStack),
 	)
 
 	employeeRight := container.NewHBox(
@@ -59,11 +61,59 @@ func NewEmployeeDetailsComponent(employee *entity.Employee, companyName string) 
 		cpfStack,
 	)
 
-	return container.NewBorder(
-		cpNameLabel,
-		nil,
-		employeeLeft,
-		employeeRight,
-		employeeName,
-	)
+	return &EmployeeDetailsComponent{
+		View: container.NewBorder(
+			cpNameLabel,
+			nil,
+			employeeLeft,
+			employeeRight,
+			employeeName,
+		),
+		FirstNameField: firstNameField,
+		LastNameField:  lastNameField,
+		CPFField:       cpfField,
+		fields:         []*InlineEditableField{firstNameField, lastNameField, cpfField},
+	}
+}
+
+func (details *EmployeeDetailsComponent) SetOnActivate(callback func(*InlineEditableField)) {
+	for _, field := range details.fields {
+		field.SetOnActivate(callback)
+	}
+}
+
+func (details *EmployeeDetailsComponent) SetOnChanged(callback func(*InlineEditableField)) {
+	for _, field := range details.fields {
+		field.SetOnChanged(callback)
+	}
+}
+
+func (details *EmployeeDetailsComponent) HasChanges() bool {
+	for _, field := range details.fields {
+		if field.HasChanges() {
+			return true
+		}
+	}
+	return false
+}
+
+func (details *EmployeeDetailsComponent) BeginEdit(target *InlineEditableField) {
+	for _, field := range details.fields {
+		field.BeginEdit()
+	}
+	if target != nil {
+		target.focus()
+	}
+}
+
+func (details *EmployeeDetailsComponent) CommitEdit() {
+	for _, field := range details.fields {
+		field.EndEdit()
+	}
+}
+
+func (details *EmployeeDetailsComponent) CancelEdit() {
+	for _, field := range details.fields {
+		field.CancelEdit()
+	}
 }

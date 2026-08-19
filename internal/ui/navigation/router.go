@@ -48,6 +48,7 @@ type Router struct {
 	fallbackRoute RouteID
 	factories     map[RouteID]PageFactory
 	history       []historyEntry
+	guard         NavigationGuard
 }
 
 // NewRouter creates an empty router with the route used as navigation fallback.
@@ -80,8 +81,23 @@ func (r *Router) View() fyne.CanvasObject {
 	return r.outlet.View()
 }
 
+// SetNavigationGuard installs a guard for all operations performed by this
+// router. The workspace uses it to protect inline edits from accidental
+// navigation.
+func (r *Router) SetNavigationGuard(guard NavigationGuard) {
+	r.guard = guard
+}
+
 // Push opens a page and adds it to the navigation history.
 func (r *Router) Push(route RouteID, params any) error {
+	if r.deferNavigation(func() error { return r.push(route, params) }) {
+		return nil
+	}
+
+	return r.push(route, params)
+}
+
+func (r *Router) push(route RouteID, params any) error {
 	entry, err := r.buildEntry(route, params)
 	if err != nil {
 		return r.handleNavigationError(err)
@@ -94,6 +110,14 @@ func (r *Router) Push(route RouteID, params any) error {
 
 // Replace opens a page in place of the current history entry.
 func (r *Router) Replace(route RouteID, params any) error {
+	if r.deferNavigation(func() error { return r.replace(route, params) }) {
+		return nil
+	}
+
+	return r.replace(route, params)
+}
+
+func (r *Router) replace(route RouteID, params any) error {
 	entry, err := r.buildEntry(route, params)
 	if err != nil {
 		return r.handleNavigationError(err)
@@ -109,10 +133,24 @@ func (r *Router) Back() bool {
 	if !r.CanGoBack() {
 		return false
 	}
+	if r.deferNavigation(func() error {
+		r.back()
+		return nil
+	}) {
+		return false
+	}
+
+	r.back()
+	return true
+}
+
+func (r *Router) back() {
+	if !r.CanGoBack() {
+		return
+	}
 
 	r.history = r.history[:len(r.history)-1]
 	r.show(r.history[len(r.history)-1])
-	return true
 }
 
 // CanGoBack reports whether Back has a previous page to restore.
@@ -130,6 +168,14 @@ func (r *Router) Current() RouteID {
 }
 
 func (r *Router) Reset(route RouteID, params any) error {
+	if r.deferNavigation(func() error { return r.reset(route, params) }) {
+		return nil
+	}
+
+	return r.reset(route, params)
+}
+
+func (r *Router) reset(route RouteID, params any) error {
 	entry, err := r.buildEntry(route, params)
 	if err == nil {
 		r.history = []historyEntry{entry}
@@ -192,4 +238,17 @@ func (r *Router) replaceCurrentEntry(entry historyEntry) {
 
 func (r *Router) show(entry historyEntry) {
 	r.outlet.SetContent(entry.view, nil)
+}
+
+func (r *Router) deferNavigation(action func() error) bool {
+	if r.guard == nil || !r.guard.ShouldBlock() {
+		return false
+	}
+
+	r.guard.Confirm(func() {
+		if err := action(); err != nil {
+			fyne.LogError("Não foi possível concluir a navegação.", err)
+		}
+	})
+	return true
 }

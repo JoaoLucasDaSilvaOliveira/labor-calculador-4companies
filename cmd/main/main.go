@@ -11,6 +11,7 @@ import (
 	"labor-calculador-4companies/internal/infra/config"
 	"labor-calculador-4companies/internal/infra/persistence/sqlite"
 	uiApplication "labor-calculador-4companies/internal/ui/application"
+	"labor-calculador-4companies/internal/ui/components"
 	"labor-calculador-4companies/internal/ui/navigation"
 
 	"github.com/joho/godotenv"
@@ -44,19 +45,28 @@ func main() {
 
 	getCompaniesUseCase := companyUC.NewGetCompanyUsecase(companyRepository)
 	getCompanyByIDUseCase := companyUC.NewGetCompanyByIdUsecase(companyRepository)
+	updateCompanyUseCase := companyUC.NewUpdateCompanyUsecase(companyRepository)
 	getEmployeesUseCase := employeeUC.NewGetEmployeeUsecase(employeeRepository)
 	getEmployeeByIDUseCase := employeeUC.NewGetEmployeeByIdUsecase(employeeRepository)
+	updateEmployeeUseCase := employeeUC.NewUpdateEmployeeUsecase(employeeRepository)
 	getReceiptsUseCase := receiptUC.NewGetReceiptUsecase(receiptRepository)
 
 	// UI APPLICATION, ROUTERS AND PAGE PROVIDER
 	application := uiApplication.NewApplication()
 	workspaceRouter := navigation.NewRouter(navigation.RouteQuickAccess)
+	editSession := &navigation.EditSession{}
+	companyListReload := &components.CompanyListReloadHandle{}
 	routeProvider := newUIRouteProvider(uiRouteProviderDeps{
-		GetCompanies:    getCompaniesUseCase,
-		GetCompanyByID:  getCompanyByIDUseCase,
-		GetEmployees:    getEmployeesUseCase,
-		GetEmployeeByID: getEmployeeByIDUseCase,
-		GetReceipts:     getReceiptsUseCase,
+		GetCompanies:      getCompaniesUseCase,
+		GetCompanyByID:    getCompanyByIDUseCase,
+		UpdateCompany:     updateCompanyUseCase,
+		GetEmployees:      getEmployeesUseCase,
+		GetEmployeeByID:   getEmployeeByIDUseCase,
+		UpdateEmployee:    updateEmployeeUseCase,
+		GetReceipts:       getReceiptsUseCase,
+		Window:            application.Window(),
+		EditSession:       editSession,
+		CompanyListReload: companyListReload,
 	})
 
 	if err := routeProvider.RegisterWorkspace(workspaceRouter); err != nil {

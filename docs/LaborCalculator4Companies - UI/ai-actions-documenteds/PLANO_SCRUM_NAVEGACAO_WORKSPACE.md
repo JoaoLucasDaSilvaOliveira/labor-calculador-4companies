@@ -440,7 +440,7 @@ go build -o /tmp/labor-calculator-main-build ./cmd/main
 | PB-17 | Validar pertencimento ao contexto ativo      |         P0 |      8 |               6 |
 | PB-18 | Implementar `Close All`                      |         P1 |      5 |               7 |
 | PB-19 | Adicionar estado visual do workspace         |         P1 |      3 |               7 |
-| PB-20 | Preparar confirmação de conteúdo não salvo   |         P2 |      8 |          Futuro |
+| PB-20 | Preparar confirmação de conteúdo não salvo   |         P2 |      8 | Implementado nesta evolução |
 | PB-21 | Adicionar lifecycle `OnShow`/`OnHide`        |         P2 |      8 |               8 |
 | PB-22 | Criar teste ponta a ponta da navegação       |         P1 |      8 |               8 |
 | PB-23 | Atualizar documentação arquitetural          |         P1 |      3 |           Todas |
@@ -1348,11 +1348,10 @@ A sidebar não é recriada.
 
 ### Conteúdo não salvo
 
-Nesta sprint, implementar confirmação somente se já existirem formulários com
-estado “dirty”.
-
-Caso contrário, registrar a proteção como backlog futuro para não criar uma
-abstração sem consumidor real.
+A confirmação foi implementada para as sessões de edição inline das telas de
+empresa e funcionário. O router interno protege `Push`, `Reset`, `Replace` e
+`Back`; continuar descarta os campos por meio de `CANCELAR` antes de executar
+a navegação, enquanto voltar à edição preserva o formulário.
 
 ### Incremento
 

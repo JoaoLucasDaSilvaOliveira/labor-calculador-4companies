@@ -28,13 +28,16 @@ RootRouter
         └── EmployeePage
 ```
 
-As telas de empresa e funcionário são somente leitura nesta etapa. Elas
-consultam os use cases reais, filtram funcionários por empresa e recibos por
-funcionário e distinguem carregamento, estado vazio e erro recuperável. A
-composição visual segue os protótipos de `cmd/main/testes_ui/1.1` e
-`cmd/main/testes_ui/1.2`, incluindo os painéis customizados, dimensões e ações
-de rodapé. A edição inline está visualmente preparada, mas ainda não persiste
-alterações.
+As telas de empresa e funcionário consultam os use cases reais, filtram
+funcionários por empresa e recibos por funcionário e distinguem carregamento,
+estado vazio e erro recuperável. A composição visual segue os protótipos de
+`cmd/main/testes_ui/1.1` e `cmd/main/testes_ui/1.2`, incluindo os painéis
+customizados, dimensões e ações de rodapé. Os campos de negócio entram em
+edição inline, persistem pelos use cases de update e podem ser cancelados. O
+modo `Entry` não é considerado alteração pendente até que um valor divirja do
+snapshot original; somente então o router interno protege a navegação. Após o
+update da empresa, a lista atualmente montada na sidebar é recarregada de
+forma assíncrona.
 
 ## Sumário
 

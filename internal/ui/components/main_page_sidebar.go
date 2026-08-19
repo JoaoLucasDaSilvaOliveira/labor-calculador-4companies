@@ -1,8 +1,10 @@
 package components
 
 import (
+	"strings"
 	"time"
 
+	query "labor-calculador-4companies/internal/application/query/company"
 	"labor-calculador-4companies/internal/ui/assets"
 	uiUtils "labor-calculador-4companies/internal/ui/utils"
 
@@ -17,6 +19,7 @@ import (
 // by the opened and search sidebar states.
 type MainPageSidebarDeps struct {
 	Companies         CompanyFinder
+	CompanyListReload *CompanyListReloadHandle
 	OnCompanySelected func(companyID int)
 	OnAddCompany      func()
 }
@@ -28,7 +31,16 @@ func NewOpenedMainPageSidebar(deps MainPageSidebarDeps, onCloseSidebar func(), o
 		onSearch,
 		deps.OnAddCompany,
 	)
-	companiesList := NewCompaniesListComponent(deps.Companies, deps.OnCompanySelected)
+	reloadableCompaniesList := NewReloadableCompaniesListComponent(
+		deps.Companies,
+		query.GetCompanyWithFilter{},
+		companiesEmptyMessage,
+		deps.OnCompanySelected,
+	)
+	if deps.CompanyListReload != nil {
+		deps.CompanyListReload.Set(reloadableCompaniesList.Reload)
+	}
+	companiesList := reloadableCompaniesList.View()
 
 	return container.NewBorder(
 		toolbar,
@@ -66,12 +78,22 @@ func NewSearchMainPageSidebar(deps MainPageSidebarDeps, onCloseSidebar func(), o
 	searchResults.SetContent(widget.NewLabel("Digite um nome para buscar."), nil)
 
 	searchInput.OnChanged = func(companyName string) {
-		result := NewCompaniesSearchByNameListComponent(
+		trimmedName := strings.TrimSpace(companyName)
+		if trimmedName == "" {
+			searchResults.SetContent(widget.NewLabel("Digite um nome para buscar."), nil)
+			return
+		}
+
+		result := NewReloadableCompaniesListComponent(
 			deps.Companies,
-			companyName,
+			query.GetCompanyWithFilter{Name: trimmedName},
+			companiesSearchEmptyMessage,
 			deps.OnCompanySelected,
 		)
-		searchResults.SetContent(result, nil)
+		if deps.CompanyListReload != nil {
+			deps.CompanyListReload.Set(result.Reload)
+		}
+		searchResults.SetContent(result.View(), nil)
 	}
 
 	searchContent := container.NewBorder(searchInput, nil, nil, nil, searchResults.View())

@@ -22,9 +22,10 @@ const (
 
 // MainPageDeps lists the external capabilities required by the mainpage.
 type MainPageDeps struct {
-	Companies     components.CompanyFinder
-	Navigator     navigation.Navigator
-	WorkspaceView fyne.CanvasObject
+	Companies         components.CompanyFinder
+	CompanyListReload *components.CompanyListReloadHandle
+	Navigator         navigation.Navigator
+	WorkspaceView     fyne.CanvasObject
 }
 
 // mainPage owns only the presentation state local to the mainpage.
@@ -68,6 +69,7 @@ func (p *mainPage) build() fyne.CanvasObject {
 func (p *mainPage) sidebarDeps() components.MainPageSidebarDeps {
 	return components.MainPageSidebarDeps{
 		Companies:         p.deps.Companies,
+		CompanyListReload: p.deps.CompanyListReload,
 		OnCompanySelected: p.openCompanyDetails,
 		OnAddCompany:      p.openCompanyRegistration,
 	}

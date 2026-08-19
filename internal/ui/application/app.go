@@ -37,3 +37,9 @@ func (a *MainApplication) Run(rootView fyne.CanvasObject) {
 	a.masterWindow.SetContent(rootView)
 	a.masterWindow.ShowAndRun()
 }
+
+// Window exposes the composition-root window to UI services that need to
+// present dialogs without creating a second window or using global state.
+func (a *MainApplication) Window() fyne.Window {
+	return a.masterWindow
+}

@@ -13,6 +13,112 @@ import (
 
 const routeTestDetails RouteID = "test.details"
 
+type testNavigationGuard struct {
+	blocked      bool
+	confirmCount int
+	continuation func()
+}
+
+func (g *testNavigationGuard) ShouldBlock() bool { return g.blocked }
+
+func (g *testNavigationGuard) Confirm(onContinue func()) {
+	g.confirmCount++
+	g.continuation = onContinue
+}
+
+func TestRouterDefersPushUntilNavigationGuardContinues(t *testing.T) {
+	fyneApp := test.NewApp()
+	t.Cleanup(fyneApp.Quit)
+
+	router := newTestRouter(t)
+	if err := router.Replace(RouteMain, nil); err != nil {
+		t.Fatalf("Replace(RouteMain) returned an error: %v", err)
+	}
+
+	guard := &testNavigationGuard{blocked: true}
+	router.SetNavigationGuard(guard)
+	if err := router.Push(routeTestDetails, nil); err != nil {
+		t.Fatalf("guarded Push returned an error: %v", err)
+	}
+	if router.Current() != RouteMain {
+		t.Fatalf("current route = %q before confirmation, want %q", router.Current(), RouteMain)
+	}
+	if guard.confirmCount != 1 {
+		t.Fatalf("confirm count = %d, want 1", guard.confirmCount)
+	}
+
+	guard.blocked = false
+	guard.continuation()
+	if router.Current() != routeTestDetails {
+		t.Fatalf("current route after confirmation = %q, want %q", router.Current(), routeTestDetails)
+	}
+}
+
+func TestRouterDefersBackUntilNavigationGuardContinues(t *testing.T) {
+	fyneApp := test.NewApp()
+	t.Cleanup(fyneApp.Quit)
+
+	router := newTestRouter(t)
+	if err := router.Replace(RouteMain, nil); err != nil {
+		t.Fatalf("Replace(RouteMain) returned an error: %v", err)
+	}
+	if err := router.Push(routeTestDetails, nil); err != nil {
+		t.Fatalf("Push(routeTestDetails) returned an error: %v", err)
+	}
+
+	guard := &testNavigationGuard{blocked: true}
+	router.SetNavigationGuard(guard)
+	if router.Back() {
+		t.Fatal("guarded Back returned true before confirmation")
+	}
+	if router.Current() != routeTestDetails {
+		t.Fatalf("current route = %q before confirmation, want details", router.Current())
+	}
+
+	guard.blocked = false
+	guard.continuation()
+	if router.Current() != RouteMain {
+		t.Fatalf("current route after confirmation = %q, want main", router.Current())
+	}
+}
+
+func TestEditSessionDiscardsAndClearsState(t *testing.T) {
+	session := &EditSession{}
+	discarded := false
+	session.Begin(func() { discarded = true })
+
+	if !session.Active() {
+		t.Fatal("session is inactive after Begin")
+	}
+	session.Discard()
+	if !discarded {
+		t.Fatal("discard callback was not called")
+	}
+	if session.Active() {
+		t.Fatal("session remains active after Discard")
+	}
+}
+
+func TestUnsavedChangesGuardDiscardsBeforeContinuingWithoutWindow(t *testing.T) {
+	session := &EditSession{}
+	discarded := false
+	session.Begin(func() { discarded = true })
+	guard := &UnsavedChangesGuard{Session: session}
+	continued := false
+
+	guard.Confirm(func() { continued = true })
+
+	if !discarded {
+		t.Fatal("guard did not discard the active edit session")
+	}
+	if !continued {
+		t.Fatal("guard did not continue navigation after discard")
+	}
+	if session.Active() {
+		t.Fatal("edit session remains active after guarded continuation")
+	}
+}
+
 func TestRouterPushAndBackRestoreHistory(t *testing.T) {
 	fyneApp := test.NewApp()
 	t.Cleanup(fyneApp.Quit)

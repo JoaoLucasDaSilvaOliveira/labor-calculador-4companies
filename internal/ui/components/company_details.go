@@ -8,22 +8,31 @@ import (
 	uiUtils "labor-calculador-4companies/internal/ui/utils"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
 
-// NewCompanyDetailsComponent preserves the prototype composition of the
-// company information row while keeping the editable fields reusable.
-func NewCompanyDetailsComponent(company *entity.Company) fyne.CanvasObject {
+// CompanyDetailsComponent preserves the prototype composition and exposes
+// the business fields to the owning page's edit controller.
+type CompanyDetailsComponent struct {
+	View      fyne.CanvasObject
+	NameField *InlineEditableField
+	CNPJField *InlineEditableField
+	CodeLabel *widget.Label
+	fields    []*InlineEditableField
+}
+
+func NewCompanyDetailsComponent(company *entity.Company) *CompanyDetailsComponent {
 	codLabel := widget.NewLabel("CÓDIGO")
-	codStack := container.NewStack(NewInlineEditableField(strconv.Itoa(company.GetId()), 50))
+	codStack := container.NewStack(newReadOnlyInformationField(strconv.Itoa(company.GetId()), 50))
 
 	nameLabel := widget.NewLabel("NOME")
-	nameStack := container.NewStack(NewInlineEditableField(company.Name(), 300))
+	nameField := NewInlineEditableField(company.Name(), 300)
+	nameStack := container.NewStack(nameField)
 
 	cnpjLabel := widget.NewLabel("CNPJ")
-	cnpjStack := container.NewStack(NewInlineEditableField(company.CNPJ(), 150))
+	cnpjField := NewInlineEditableField(company.CNPJ(), 150)
+	cnpjStack := container.NewStack(cnpjField)
 
 	companyLeft := container.NewHBox(
 		codLabel,
@@ -45,73 +54,67 @@ func NewCompanyDetailsComponent(company *entity.Company) fyne.CanvasObject {
 		cnpjStack,
 	)
 
-	return container.NewBorder(
-		widget.NewLabelWithStyle("", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}),
-		nil,
-		companyLeft,
-		companyRight,
-		companyName,
-	)
-}
-
-// InlineEditableField is the clickable field used by the company prototype.
-// Persistence is intentionally left to the future save flow.
-type InlineEditableField struct {
-	widget.BaseWidget
-
-	value   *widget.Label
-	entry   *widget.Entry
-	content *fyne.Container
-}
-
-func NewInlineEditableField(text string, width float32) *InlineEditableField {
-	field := &InlineEditableField{
-		value: widget.NewLabel(text),
-		entry: widget.NewEntry(),
+	return &CompanyDetailsComponent{
+		View: container.NewBorder(
+			widget.NewLabelWithStyle("", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}),
+			nil,
+			companyLeft,
+			companyRight,
+			companyName,
+		),
+		NameField: nameField,
+		CNPJField: cnpjField,
+		CodeLabel: codLabel,
+		fields:    []*InlineEditableField{nameField, cnpjField},
 	}
-	field.value.Truncation = fyne.TextTruncateEllipsis
-	field.entry.SetText(text)
-	field.entry.Hide()
-
-	background := newRoundedInformationRectangle(
-		color.NRGBA{R: 240, G: 240, B: 240, A: 255},
-		width,
-		field.entry.MinSize().Height,
-	)
-	field.content = container.NewStack(background, field.value, field.entry)
-	field.ExtendBaseWidget(field)
-	return field
 }
 
-func (field *InlineEditableField) CreateRenderer() fyne.WidgetRenderer {
-	return widget.NewSimpleRenderer(field.content)
-}
-
-func (field *InlineEditableField) Tapped(*fyne.PointEvent) {
-	if field.entry.Visible() {
-		return
+func (details *CompanyDetailsComponent) SetOnActivate(callback func(*InlineEditableField)) {
+	for _, field := range details.fields {
+		field.SetOnActivate(callback)
 	}
+}
 
-	field.value.Hide()
-	field.entry.Show()
-	if app := fyne.CurrentApp(); app != nil {
-		if canvas := app.Driver().CanvasForObject(field.entry); canvas != nil {
-			canvas.Focus(field.entry)
+func (details *CompanyDetailsComponent) SetOnChanged(callback func(*InlineEditableField)) {
+	for _, field := range details.fields {
+		field.SetOnChanged(callback)
+	}
+}
+
+func (details *CompanyDetailsComponent) HasChanges() bool {
+	for _, field := range details.fields {
+		if field.HasChanges() {
+			return true
 		}
 	}
+	return false
 }
 
-func newRoundedInformationRectangle(fillColor color.Color, width, height float32) *canvas.Rectangle {
-	rectangle := canvas.NewRectangle(fillColor)
-	rectangle.SetMinSize(fyne.NewSize(width, height))
-	rectangle.CornerRadius = 5
-	rectangle.StrokeColor = color.Black
-	rectangle.StrokeWidth = 0.5
-	return rectangle
+func (details *CompanyDetailsComponent) BeginEdit(target *InlineEditableField) {
+	for _, field := range details.fields {
+		field.BeginEdit()
+	}
+	if target != nil {
+		target.focus()
+	}
 }
 
-func newTransparentInformationRectangle(width, height float32) *canvas.Rectangle {
-	rectangle := canvas.NewRectangle(color.Transparent)
-	rectangle.SetMinSize(fyne.NewSize(width, height))
-	return rectangle
+func (details *CompanyDetailsComponent) CommitEdit() {
+	for _, field := range details.fields {
+		field.EndEdit()
+	}
+}
+
+func (details *CompanyDetailsComponent) CancelEdit() {
+	for _, field := range details.fields {
+		field.CancelEdit()
+	}
+}
+
+func newReadOnlyInformationField(text string, width float32) fyne.CanvasObject {
+	value := widget.NewLabel(text)
+	return container.NewStack(
+		newRoundedInformationRectangle(color.NRGBA{R: 240, G: 240, B: 240, A: 255}, width, value.MinSize().Height),
+		value,
+	)
 }

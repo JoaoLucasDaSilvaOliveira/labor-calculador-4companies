@@ -6,13 +6,13 @@ import (
 	"fyne.io/fyne/v2"
 )
 
-func newAsyncPrototypeContent(loadingMessage string, load func() fyne.CanvasObject) fyne.CanvasObject {
+func newAsyncPrototypeContent(loadingMessage string, load func() func() fyne.CanvasObject) fyne.CanvasObject {
 	content := components.NewAnimatedContent()
 	content.SetContent(components.NewLoadingState(loadingMessage), nil)
 
 	go func() {
-		loadedContent := load()
-		update := func() { content.SetContent(loadedContent, nil) }
+		buildLoadedContent := load()
+		update := func() { content.SetContent(buildLoadedContent(), nil) }
 		if fyne.CurrentApp() == nil {
 			update()
 			return

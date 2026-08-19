@@ -89,3 +89,33 @@ para o limite máximo das duas listas.
 
 **Próximo passo:** implementar o comportamento de edição e persistência dos
 campos mantendo os componentes visuais atuais.
+
+# Passo 13:
+Implementado o fluxo de edição inline das Telas 1.1 e 1.2. Os campos de
+negócio alternam entre label e `Entry`, `GRAVAR` persiste pelos use cases de
+update e `CANCELAR` restaura os valores originais. A Tela 1.2 passou a expor
+primeiro nome e sobrenome separadamente; os códigos continuam somente leitura.
+
+O router interno agora compartilha uma sessão de edição e bloqueia
+`Push`/`Reset`/`Replace`/`Back` com diálogo de alterações não salvas. A
+composição passou a construir widgets na UI thread depois das consultas
+assíncronas, e foram adicionados testes para campos e guarda de navegação,
+mantendo os testes existentes das consultas das páginas.
+
+**Próximo passo:** implementar a criação e edição de recibos, reaproveitando a
+mesma política de persistência e proteção contra navegação.
+
+# Passo 14:
+Refinado o estado de edição inline para separar o modo visual `Entry` de uma
+alteração pendente. `GRAVAR`, `CANCELAR` e a proteção de navegação só são
+ativados quando algum valor diverge do original; retornar ao valor inicial
+desfaz o estado pendente.
+
+Os estados label e edição agora usam apresentações exclusivas, com destaque
+visual azul no modo editável. Após salvar uma empresa, a lista atualmente
+montada na sidebar repete a consulta em goroutine e atualiza seus itens na UI
+thread. Foram adicionados testes para dirty state, troca visual e reload da
+lista.
+
+**Próximo passo:** implementar a criação e edição de recibos, reaproveitando a
+mesma política de persistência e proteção contra navegação.
